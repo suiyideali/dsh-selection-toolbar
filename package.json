@@ -1,0 +1,41 @@
+{
+  "name": "dsh-selection-toolbar",
+  "description": "Select text in a conversation to get a floating toolbar: copy, quote-reply, ask/explain/translate/summarize, and a custom-prompt input. All AI actions reuse the current session.",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "keywords": [
+    "deepseek",
+    "harness",
+    "dsh",
+    "dsh-plugin",
+    "selection",
+    "toolbar",
+    "quote",
+    "translate",
+    "summarize"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "client": null
+}

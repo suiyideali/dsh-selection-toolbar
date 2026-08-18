@@ -1,0 +1,6 @@
+# dsh-selection-toolbar bundle patch: mount the plugin under its package name,
+# resolved through the profile's node_modules. The web `dsh.client` declaration
+# in package.json makes the loader pick up lib/client.js as the client half.
+- insert:
+    - id: dsh-selection-toolbar
+      name: dsh-selection-toolbar
