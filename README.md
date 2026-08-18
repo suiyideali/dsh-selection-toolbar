@@ -3,8 +3,8 @@
 English | [中文](README.zh.md)
 
 Select text inside a DeepSeek Harness conversation and a small floating toolbar
-appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · 自定义**
-(copy · quote-reply · ask · explain · translate · summarize · custom prompt).
+appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结**
+(copy · quote-reply · ask · explain · translate · summarize).
 
 All AI actions reuse the **current session** — the selected text is sent into
 the active conversation as a normal user message, so the model has full context.
@@ -15,13 +15,12 @@ the active conversation as a normal user message, so the model has full context.
 | --- | --- |
 | 复制 Copy | Copy the selected text to the clipboard. |
 | 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. |
-| 询问 Ask | Send the raw selected text into the current session. |
+| 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the raw selection as a plain message. |
 | 解释 Explain | Send `请解释下面这段内容：` + selection. |
 | 翻译 Translate | Send `请把下面这段内容翻译成中文：` + selection. |
 | 总结 Summarize | Send `请用简洁的语言总结下面这段内容：` + selection. |
-| 自定义 Custom | Inline input for any prompt; Enter sends `你的问题 + selection`. |
 
-The popup hides on Escape, scroll, or clicking elsewhere; the 自定义 input
+The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
 stays open while typing (focusing the input collapses the page selection
 without closing the popup).
 
@@ -32,7 +31,7 @@ same collapsible look as the built-in 终端 / 网页搜索 entries — with:
 
 - 弹窗出现延时 — delay before the toolbar appears after selecting (0–500 ms)
 - 功能开关 — toggle each toolbar entry individually (复制 · 引用 · 询问 ·
-  解释 · 翻译 · 总结 · 自定义); disabled entries disappear from the popup
+  解释 · 翻译 · 总结); disabled entries disappear from the popup
   immediately, and 全部开启 re-enables everything at once
 - 恢复默认 — reset all options
 
@@ -73,8 +72,8 @@ Then restart the web app so the new client bundle is picked up.
   the markdown blockquote is the same shape as other quote-reply plugins.
 - **Selections are scoped** to the message list (`[data-chat-flow]`) and
   exclude the composer, inputs, and contenteditable regions.
-- Fixed actions build fixed prefixes; 自定义 caps at 2k chars and the selection
-  at 20k chars to keep injected messages bounded.
+- Fixed actions build fixed prefixes; the 询问 question caps at 2k chars and the
+  selection at 20k chars to keep injected messages bounded.
 
 ## License
 
