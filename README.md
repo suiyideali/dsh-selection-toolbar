@@ -9,6 +9,12 @@ appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 ·
 All AI actions reuse the **current session** — the selected text is sent into
 the active conversation as a normal user message, so the model has full context.
 
+## Screenshot
+
+![dsh-selection-toolbar in action](docs/selection-toolbar-screenshot.png)
+
+Selecting text reveals the floating toolbar — 复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · 自定义.
+
 ## Features
 
 | Action | Behavior |
