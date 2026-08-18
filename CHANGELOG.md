@@ -24,6 +24,17 @@ All notable changes to dsh-selection-toolbar are documented here.
   and apply to the popup live, no reload needed.
 - **Per-action visibility**: a `hiddenActions` list in localStorage.
 
+### Fixed
+
+- **Real mouse clicks inside the popup no longer collapse it**: the host app's
+  own `pointerdown` handling clears the document selection, which fired
+  `selectionchange` before the click handler ran and closed the popup — the
+  询问 input was only reachable by synthetic `.click()` before. Pointer
+  interactions inside the popup now hold refresh off until `pointerup`.
+- **Rapid consecutive toggles in the settings card no longer overwrite each
+  other**: chip updates now merge onto the latest state via functional
+  `setState` (previously a stale closure snapshot let the last click win).
+
 ## [1.0.0] — 2026-08-18
 
 Initial release. Floating toolbar on text selection inside a DeepSeek Harness
