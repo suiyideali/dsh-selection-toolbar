@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "main": "lib/index.js",
+  "scripts": {
+    "check": "node scripts/check.js",
+    "test": "node --test test/"
+  },
   "exports": {
     ".": {
       "default": "./lib/index.js"
@@ -14,6 +18,13 @@
     "./package.json": "./package.json"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suiyideali/dsh-selection-toolbar.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "deepseek",
     "harness",
