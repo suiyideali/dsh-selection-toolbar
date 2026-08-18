@@ -27,13 +27,17 @@ without closing the popup).
 
 ## Settings
 
-The plugin appears in **设置 → 插件 → 插件列表** with a configuration card:
+The plugin appears in **设置 → 插件 → 插件列表** as a native-style card — the
+same collapsible look as the built-in 终端 / 网页搜索 entries — with:
 
 - 弹窗出现延时 — delay before the toolbar appears after selecting (0–500 ms)
-- 显示「自定义」按钮 — hide the custom-prompt entry when off
+- 功能开关 — toggle each toolbar entry individually (复制 · 引用 · 询问 ·
+  解释 · 翻译 · 总结 · 自定义); disabled entries disappear from the popup
+  immediately, and 全部开启 re-enables everything at once
 - 恢复默认 — reset all options
 
-Options persist in the browser (localStorage) and apply to the popup live.
+Options persist in the browser (localStorage) and apply to the popup live,
+no reload needed.
 
 ## Install
 

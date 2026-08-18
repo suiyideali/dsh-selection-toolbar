@@ -6,11 +6,16 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Added
 
-- **Settings card in 设置 → 插件**: the plugin now appears in the plugin
-  configuration section with editable options — 弹窗出现延时 (0–500 ms, applies
-  to the initial popup reveal) and 显示「自定义」按钮 (hides the custom-prompt
-  entry when off), plus a 恢复默认 reset. Options persist in browser
-  localStorage and apply to the popup live, no reload needed.
+- **Settings card in 设置 → 插件**: the plugin appears as a native-style
+  collapsible card (same look as the built-in 终端 / 网页搜索 entries) with
+  editable options — 弹窗出现延时 (0–500 ms, applies to the initial popup
+  reveal), 功能开关 (individually toggle 复制 · 引用 · 询问 · 解释 · 翻译 ·
+  总结 · 自定义; disabled entries disappear from the popup live, 全部开启
+  re-enables everything), and 恢复默认. Options persist in browser localStorage
+  and apply to the popup live, no reload needed.
+- **Per-action visibility**: a `hiddenActions` list in localStorage; the legacy
+  `showCustom` flag migrates into it on load and is mirrored back on save for
+  older builds.
 
 ## [1.0.0] — 2026-08-18
 
