@@ -25,6 +25,16 @@ The popup hides on Escape, scroll, or clicking elsewhere; the 自定义 input
 stays open while typing (focusing the input collapses the page selection
 without closing the popup).
 
+## Settings
+
+The plugin appears in **设置 → 插件 → 插件列表** with a configuration card:
+
+- 弹窗出现延时 — delay before the toolbar appears after selecting (0–500 ms)
+- 显示「自定义」按钮 — hide the custom-prompt entry when off
+- 恢复默认 — reset all options
+
+Options persist in the browser (localStorage) and apply to the popup live.
+
 ## Install
 
 From GitHub:
