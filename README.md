@@ -1,4 +1,6 @@
-# dsh-selection-toolbar
+# dsh-selection-toolbar [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+
+English | [中文](README.zh.md)
 
 Select text inside a DeepSeek Harness conversation and a small floating toolbar
 appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · 自定义**

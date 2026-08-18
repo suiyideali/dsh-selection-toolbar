@@ -1,4 +1,6 @@
-# dsh-selection-toolbar（划词工具栏）
+# dsh-selection-toolbar（划词工具栏）[![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+
+[English](README.md) | 中文
 
 在 DeepSeek Harness 会话里划选文本，选区上方浮现一个小工具栏：
 **复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · 自定义**。
