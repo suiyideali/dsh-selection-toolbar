@@ -18,6 +18,17 @@
     "./package.json": "./package.json"
   },
   "license": "MIT",
+  "files": [
+    "lib",
+    "scripts",
+    "docs",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/suiyideali/dsh-selection-toolbar.git"
