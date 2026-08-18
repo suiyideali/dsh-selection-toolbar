@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: 20
       - name: Repo health checks
-        run: node scripts/check.js && node --test test/
+        run: node scripts/check.js && node --test
