@@ -52,15 +52,20 @@ dsh plugin --profile web add /path/to/dsh-selection-toolbar
 
 ## 依赖
 
-- dsh web（已在 v0.1.0-rc.6 上测试）
-- profile 需已挂载 `@deepseek-ai/dsh-client-runtime` 与
-  `@deepseek-ai/dsh-client-ui-slots`（`web` profile 默认自带）。
+- dsh web（已在 v0.1.0-rc.6 与 v0.1.0-rc.8 上测试）
+- profile 需已挂载 `@deepseek-ai/dsh-client-runtime`（`web` profile 默认
+  自带）。自 rc.8 起设置卡片通过按设置命名空间分发的
+  `settings.plugin.item` keyed 槽注册，插件的小型 host 半端会注册
+  `dsh-selection-toolbar` 命名空间，设置 → 插件 才会派发这张卡片；
+  rc.6 下同一份注册满足旧的 list 槽契约。
 
 ## 架构说明
 
-- **纯 client 插件**：没有 host 半端。AI 动作通过 client 侧 `sessions`
-  服务的 `binding(id).session.prompt(...)` 发送——与 composer 自身同一条
-  通路，排队与错误面都是原生的。
+- **行为纯 client、附一个极小的 host 半端**：AI 动作通过 client 侧
+  `sessions` 服务的 `binding(id).session.prompt(...)` 发送——与 composer
+  自身同一条通路，排队与错误面都是原生的。host 半端只负责注册设置
+  命名空间（见「依赖」），让 rc.8+ 能派发设置卡片；卡片本身的选项值
+  仍存在浏览器 localStorage（client-only 设计）。
 - **引用插入**走 `conversation.input.dock` 槽位官方标准 prop
   `inputActions.setDraft`，刻意避开 `sessions.scope()` + 事件 bail（动态
   插件 facade 的跨 Context 守卫禁止那条路）；markdown 引用块与其它
