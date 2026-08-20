@@ -26,6 +26,20 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **dsh rc.8 keyed-slot crash**: `settings.plugin.item` became a keyed slot in
+  rc.8 — the register call must carry `key` (the settings namespace the card
+  edits), otherwise the loader throws
+  `keyed slot "settings.plugin.item" requires options.key` and the whole
+  plugin fails to load. The card now registers with
+  `key: 'dsh-selection-toolbar'` alongside the legacy `id`/`order`/`label`
+  options, so the same registration also satisfies the older rc.6 list-slot
+  contract (the loader validates only the option its current slot kind
+  requires and ignores the rest).
+- **Settings card visible on rc.8**: the 设置 → 插件 tab dispatches cards only
+  for settings namespaces the Host serves. The host half (previously a stub)
+  now registers the `dsh-selection-toolbar` namespace via `ctx.settings`
+  (optional dependency — dsh builds without the settings service keep the
+  rc.6 behavior; the card's option values remain in browser localStorage).
 - **Real mouse clicks inside the popup no longer collapse it**: the host app's
   own `pointerdown` handling clears the document selection, which fired
   `selectionchange` before the click handler ran and closed the popup — the
@@ -34,6 +48,12 @@ All notable changes to dsh-selection-toolbar are documented here.
 - **Rapid consecutive toggles in the settings card no longer overwrite each
   other**: chip updates now merge onto the latest state via functional
   `setState` (previously a stale closure snapshot let the last click win).
+
+### Compatibility
+
+- dsh web v0.1.0-rc.6 **and** v0.1.0-rc.8.
+- New runtime dependencies (host half only): `@deepseek-ai/dsh-settings` and
+  `@deepseek-ai/schemastery`, both already linked in the `web` profile.
 
 ## [1.0.0] — 2026-08-18
 

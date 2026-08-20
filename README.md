@@ -56,16 +56,21 @@ Then restart the web app so the new client bundle is picked up.
 
 ## Requirements
 
-- dsh web (v0.1.0-rc.6 tested)
-- The profile must already mount `@deepseek-ai/dsh-client-runtime` and
-  `@deepseek-ai/dsh-client-ui-slots` (standard in the `web` profile).
+- dsh web (v0.1.0-rc.6 and v0.1.0-rc.8 tested)
+- The profile must already mount `@deepseek-ai/dsh-client-runtime` (standard in
+  the `web` profile). Since rc.8 the settings card registers through the
+  namespace-keyed `settings.plugin.item` slot, and the small host half serves
+  the `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the
+  card; on rc.6 the same registration satisfies the older list-slot contract.
 
 ## Architecture notes
 
-- **Client-only**: the plugin has no host half. AI actions prompt the session
+- **Client-only behavior, tiny host half**: AI actions prompt the session
   through the client `sessions` service — `binding(id).session.prompt(...)` —
   the exact path the composer itself uses, so queueing and error surfaces are
-  native.
+  native. The only host code registers the settings namespace (see
+  Requirements) so the settings card is served on rc.8+; the card's option
+  values stay in browser localStorage (client-only design).
 - **Quote insert** uses the official `inputActions.setDraft` standard prop from
   the `conversation.input.dock` slot. It deliberately avoids `sessions.scope()`
   + event bails, which the dynamic-plugin facade forbids (cross-context guard);
