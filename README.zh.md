@@ -45,8 +45,13 @@ dsh plugin --profile web add github:suiyideali/dsh-selection-toolbar
 或本地 checkout：
 
 ```bash
+cd dsh-selection-toolbar && pnpm install   # 或：npm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
+
+host 半端依赖 `@deepseek-ai/dsh-settings` 与 `@deepseek-ai/schemastery`
+（已在 `package.json` 声明），从本地路径安装前请先装好 checkout 的依赖；
+从 GitHub 安装会自动解析这些依赖。
 
 装完后重启 web 应用以加载新的 client bundle。
 

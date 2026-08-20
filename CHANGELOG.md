@@ -53,7 +53,9 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 - dsh web v0.1.0-rc.6 **and** v0.1.0-rc.8.
 - New runtime dependencies (host half only): `@deepseek-ai/dsh-settings` and
-  `@deepseek-ai/schemastery`, both already linked in the `web` profile.
+  `@deepseek-ai/schemastery`, both already linked in the `web` profile. A local
+  checkout must run `pnpm install` before `dsh plugin add <path>` so the host
+  half can resolve them.
 
 ## [1.0.0] — 2026-08-18
 

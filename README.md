@@ -49,8 +49,14 @@ dsh plugin --profile web add github:suiyideali/dsh-selection-toolbar
 or from a local checkout:
 
 ```bash
+cd dsh-selection-toolbar && pnpm install   # or: npm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
+
+The host half depends on `@deepseek-ai/dsh-settings` and
+`@deepseek-ai/schemastery` (declared in `package.json`), so install the
+checkout's dependencies before adding it from a local path; installing from
+GitHub resolves them automatically.
 
 Then restart the web app so the new client bundle is picked up.
 
