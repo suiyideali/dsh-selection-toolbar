@@ -4,8 +4,6 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
-## [1.1.0] — 2026-08-26
-
 ### Changed
 
 - **询问 Ask is now a real question entry**: clicking it opens an inline input;
