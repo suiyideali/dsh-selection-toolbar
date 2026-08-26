@@ -1,7 +1,7 @@
 {
   "name": "dsh-selection-toolbar",
   "description": "Select text in a conversation to get a floating toolbar: copy, quote-reply, ask/explain/translate/summarize, and a custom-prompt input. All AI actions reuse the current session.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "main": "lib/index.js",
   "scripts": {

@@ -4,6 +4,8 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-08-26
+
 ### Changed
 
 - **询问 Ask is now a real question entry**: clicking it opens an inline input;
@@ -15,6 +17,14 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Added
 
+- **粘贴为引用 Paste-as-quote**: paste text into the composer and a small
+  「以引用粘贴」 chip floats above the input; clicking it rewrites the
+  just-pasted range into a markdown blockquote via the official
+  `inputActions.setDraft` path (same architecture as the 引用 button).
+  Plain Ctrl+V is untouched — the chip appears after the paste and
+  auto-hides; conversion locates the pasted text by search (not absolute
+  offsets, which the controlled composer normalizes away) and aborts if
+  the text was edited or moved.
 - **Settings card in 设置 → 插件**: the plugin appears as a native-style
   collapsible card (same look as the built-in 终端 / 网页搜索 entries) with
   editable options — 弹窗出现延时 (0–500 ms, applies to the initial popup
