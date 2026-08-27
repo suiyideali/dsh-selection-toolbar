@@ -39,7 +39,7 @@
 6. **提交并推送**（需用户同意后执行）✅ 已完成（commit 6cab3011）
    ```sh
    git checkout -b add/dsh-selection-toolbar
-   git add data/plugins/suiyideali__dsh-selection-toolbar.yml README.md README.zh.md
+   git add data/plugins/suiyideali__dsh-selection-toolbar.yml README.md README.en.md
    git commit -m "Add suiyideali/dsh-selection-toolbar"
    git push -u origin add/dsh-selection-toolbar
    ```
