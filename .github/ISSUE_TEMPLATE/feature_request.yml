@@ -1,0 +1,61 @@
+name: "✨ 功能建议 / Feature Request"
+description: 建议新功能或对现有功能的改进。/ Suggest a new feature or an improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提建议！描述清楚「解决什么问题」比直接给方案更有帮助——我们会从问题出发评估方案。
+        Welcome! Describing the problem you want solved matters more than proposing a solution — we evaluate from the problem outward.
+  - type: checkboxes
+    id: duplicate-check
+    attributes:
+      label: 提交前查重 / Duplicate check
+      description: 请确认没有重复 Issue。/ Please confirm no duplicate issue exists.
+      options:
+        - label: 我已搜索过 open/closed 的 Issue，确认本 Issue 没有重复。/ I have searched open/closed issues and confirmed this is not a duplicate.
+          required: true
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue 类型 / Issue type
+      description: 本表单仅用于功能建议；Bug 请返回选择「🐛 Bug 报告」。/ This form is for feature requests only; go back and pick the bug form for bugs.
+      options:
+        - 功能请求 / Feature request
+    validations:
+      required: true
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: 涉及区域 / Feature area
+      description: 新功能关于哪一块？/ Which area is this about?
+      options:
+        - 工具栏动作（新增按钮 / 行为调整） / Toolbar actions (new button / behavior tweak)
+        - 询问输入框 / Ask inline input
+        - 设置卡片（新选项 / 开关） / Settings card (new option / toggle)
+        - 弹窗交互（触发时机 / 收起逻辑 / 键盘 / 移动端触控） / Popup interaction (trigger timing / dismissal / keyboard / touch)
+        - 安装与加载 / Install & loading
+        - 其他 / Other
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景 / Use case
+      description: 你在什么情况下需要它？解决什么问题？/ When do you need it, and what problem does it solve?
+      placeholder: 描述真实的使用情境。Describe your real-world scenario.
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望效果 / Expected behavior
+      description: 如果实现了，你期望怎么运作？可提及你设想的交互方式。/ How would you expect it to work once implemented? Interaction ideas welcome.
+      placeholder: 尽量具体，例如「长按弹窗可以拖动到别处」。Be specific.
+  - type: textarea
+    id: alternative
+    attributes:
+      label: 替代方案 / Alternatives considered
+      description: 目前你是用什么方式凑合的？/ What workaround are you using today?
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充信息 / Additional context
+      description: 其他补充（可选）。/ Anything else (optional).

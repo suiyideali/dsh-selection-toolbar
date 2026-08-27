@@ -1,0 +1,88 @@
+name: "🐛 Bug 报告 / Bug Report"
+description: 报告可复现的问题，帮助我们定位与修复。/ Report a reproducible problem to help us locate and fix it.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量保持模板完整，信息越全越快修复。提交前先[搜索现有 Issue](https://github.com/suiyideali/dsh-selection-toolbar/issues?q=is%3Aissue) 避免重复。
+        Thanks for the feedback! Please keep the template intact — complete information means faster fixes. Search existing issues first to avoid duplicates.
+  - type: checkboxes
+    id: duplicate-check
+    attributes:
+      label: 提交前查重 / Duplicate check
+      description: 请确认没有重复 Issue。/ Please confirm no duplicate issue exists.
+      options:
+        - label: 我已搜索过 open/closed 的 Issue，确认本 Issue 没有重复。/ I have searched open/closed issues and confirmed this is not a duplicate.
+          required: true
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue 类型 / Issue type
+      description: 本表单仅用于 Bug；功能请求请返回并选择「✨ 功能建议」。/ This form is for bugs only; use the feature request form instead.
+      options:
+        - Bug 报告 / Bug report
+    validations:
+      required: true
+  - type: dropdown
+    id: action-area
+    attributes:
+      label: 涉及动作或区域 / Affected action or area
+      description: 选最贴近的一项。/ Pick the closest match.
+      options:
+        - 弹窗整体（不出现 / 不收起 / 位置异常） / Toolbar popup (not appearing / not dismissing / wrong position)
+        - 复制 / Copy
+        - 引用（插入输入框） / Quote (insert into input)
+        - 询问 / Ask
+        - 解释 / Explain
+        - 翻译 / Translate
+        - 总结 / Summarize
+        - 设置卡片（延时 / 功能开关） / Settings card (delay / toggles)
+        - 安装 / 加载失败 / Install / load failure
+        - 其他 / Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 摘要 / Summary
+      description: 一两句话说清出了什么问题。/ Describe the problem in one or two sentences.
+      placeholder: 出了什么问题？What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 / Reproduction steps
+      description: 从什么操作开始、期望发生什么、实际发生了什么。截图或录屏可放到下一项。/ Where does it start, what should happen, what actually happens?
+      placeholder: |
+        1. 选中一段文本
+        2. 点击「翻译」
+        3. 实际：…（期望：…）
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图 / 录屏 / Screenshots or recording
+      description: 有助于定位问题的图片或录屏（可选）。/ Images or recordings that help locate the issue (optional).
+  - type: input
+    id: env-version
+    attributes:
+      label: 插件版本 / Plugin version
+      description: 设置 → 插件 里看到的版本号。/ The version shown under Settings → Plugins.
+      placeholder: 例如 v0.1.0-rc.8 / e.g. v0.1.0-rc.8
+    validations:
+      required: true
+  - type: input
+    id: env-host
+    attributes:
+      label: DSH Web 版本与环境 / DSH Web version & environment
+      description: 版本号 + 浏览器（Chrome / Edge / Safari …），可选填系统。/ Version number + browser (Chrome / Edge / Safari…), OS optional.
+      placeholder: 例如 rc.8 · Chrome 126 · macOS / e.g. rc.8 · Chrome 126 · macOS
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充信息 / Additional context
+      description: 控制台报错、日志片段或其他背景（可选）。/ Console errors, log snippets or other context (optional).
