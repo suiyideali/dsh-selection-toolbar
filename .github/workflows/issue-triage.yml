@@ -41,8 +41,9 @@ jobs:
             echo "Form submission detected; no action needed."
             exit 0
           fi
-          gh issue edit "$NUMBER" --add-label needs-info
-          gh issue comment "$NUMBER" --body-file - <<'MSG'
+          # No checkout here: always pass --repo so gh never needs a git remote.
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label needs-info
+          gh issue comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body-file - <<'MSG'
           感谢提交！本仓库的 Issue 需要通过模板表单填写：https://github.com/suiyideali/dsh-selection-toolbar/issues/new/choose
 
           这条 Issue 缺少模板的结构化字段（查重确认、摘要、复现步骤、环境版本等），已被标记为 `needs-info`。请补全信息，或通过上面的链接用对应表单重新提交；信息不足之前可能会被关闭。
