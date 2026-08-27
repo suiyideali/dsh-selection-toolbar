@@ -1,0 +1,55 @@
+name: issue-triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  check-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Flag issues that bypass the templates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          # Web-form submissions store answers as "### <bilingual label>" sections.
+          # Command-line/API submissions usually lack them. Require >= 2 markers
+          # so a single accidental phrase never triggers a false positive.
+          MARKERS=(
+            "提交前查重 / Duplicate check"
+            "Issue 类型 / Issue type"
+            "涉及动作或区域 / Affected action or area"
+            "涉及区域 / Feature area"
+            "摘要 / Summary"
+            "复现步骤 / Reproduction steps"
+            "使用场景 / Use case"
+            "插件版本 / Plugin version"
+            "期望效果 / Expected behavior"
+            "替代方案 / Alternatives considered"
+          )
+          COUNT=0
+          for m in "${MARKERS[@]}"; do
+            if [[ "$BODY" == *"$m"* ]]; then COUNT=$((COUNT+1)); fi
+          done
+          echo "template markers found: $COUNT"
+          if [ "$COUNT" -ge 2 ]; then
+            echo "Form submission detected; no action needed."
+            exit 0
+          fi
+          gh issue edit "$NUMBER" --add-label needs-info
+          gh issue comment "$NUMBER" --body-file - <<'MSG'
+          感谢提交！本仓库的 Issue 需要通过模板表单填写：https://github.com/suiyideali/dsh-selection-toolbar/issues/new/choose
+
+          这条 Issue 缺少模板的结构化字段（查重确认、摘要、复现步骤、环境版本等），已被标记为 `needs-info`。请补全信息，或通过上面的链接用对应表单重新提交；信息不足之前可能会被关闭。
+
+          ---
+
+          Thanks for filing an issue! This repo requires issues submitted via the form templates: https://github.com/suiyideali/dsh-selection-toolbar/issues/new/choose
+
+          This issue is missing the structured template sections (duplicate check, summary, reproduction steps, versions…) and has been labeled `needs-info`. Please complete the information or resubmit via the link above; it may be closed until then.
+          MSG

@@ -2,6 +2,28 @@
 
 Thanks for helping with dsh-selection-toolbar!
 
+## Reporting issues (including with AI assistants)
+
+File issues through the templates at <https://github.com/suiyideali/dsh-selection-toolbar/issues/new/choose>
+(blank issues are disabled):
+
+- 🐛 Bug 报告 / Bug Report — reproducible problems
+- ✨ 功能建议 / Feature Request — ideas and improvements
+
+Submitting via **command line or API** (e.g. an AI assistant running `gh issue
+create`)? The templates are **not applied automatically** there. In that case:
+
+1. Read the relevant `.github/ISSUE_TEMPLATE/bug_report.yml` or
+   `feature_request.yml` first.
+2. Prefix the title with `[Bug]: ` or `[Feature]: ` accordingly.
+3. Reconstruct the form in the body as markdown sections using the exact
+   bilingual `### …` headings from the template (e.g. `### 摘要 / Summary`),
+   filling at minimum: duplicate-check confirmation, summary, and for bugs the
+   plugin + DSH Web versions / for features the use case.
+4. Issues lacking two or more of these sections are automatically labeled
+   `needs-info` by the `issue-triage` workflow and may be closed until the
+   information is provided.
+
 ## Development
 
 The plugin is a **client-only** dsh web plugin. `lib/client.js` is the loadable
