@@ -34,6 +34,12 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **Structured content quoting keeps its structure**: tables and code fences
+  are no longer line-prefixed with `> ` — GFM blockquotes cannot contain
+  tables or code fences, so per-line prefixes destroyed them. Structured
+  selections are now wrapped with a `引用内容：`/`（引用结束）` indicator and
+  inserted verbatim; plain multi-line text keeps the per-line `>` quoting.
+  Applies to both the 引用 toolbar button and paste-as-quote.
 - **dsh rc.8 keyed-slot crash**: `settings.plugin.item` became a keyed slot in
   rc.8 — the register call must carry `key` (the settings namespace the card
   edits), otherwise the loader throws
