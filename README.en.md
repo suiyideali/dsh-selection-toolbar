@@ -39,6 +39,84 @@ input Esc closes and ↑ (on an empty input) opens history browsing, where
 it closes, the answer has already been saved to the session's side-question
 thread (localStorage, manual clear).
 
+## /btw side question
+
+Inspired by Claude Code's `/btw` — "the inverse of a subagent": a subagent
+**does** things for you, `/btw` just **takes a look** for you. It occupies no
+conversation and touches no task; it is a sticky-note Q&A area floating next
+to the main job.
+
+### Pain points it solves
+
+- **Quick questions you don't want polluting the main thread**: you hit a term,
+  an error, or a log line you don't understand and want to ask one question —
+  without that aside entering the conversation history and shaping later task
+  context.
+- **Ask while the task is running**: the agent is halfway through a long job
+  and you want to ask "why this step?" — the side channel uses its own route,
+  never queues into the session, never interrupts, and stops after one answer.
+- **Disposable, lightweight Q&A**: the answer lives only in the popup; closing
+  it leaves nothing but a local history entry, with zero session side effects.
+
+<!-- screenshot slot: composing state — /btw clicked, button row morphs into the console (history + input) -->
+
+### How to use
+
+1. Select some text (it becomes the side question's "selection" and travels
+   with your question to the model).
+2. Click **/btw** on the toolbar — the button row morphs in place into the
+   side-question console.
+3. Type a question and press Enter; while waiting a pulse animation plays and
+   you can cancel at any time.
+4. The answer renders in place (code blocks, bold, lists supported); copy the
+   raw markdown, ask another, or clear the thread.
+5. Review earlier side questions: in the composing state click a history entry
+   (or press ↑ on an empty input); on an answer just press ↑. ↑/↓ step through
+   entries, Backspace / Esc returns to the latest; history is read-only and
+   can only be cleared in bulk.
+6. Escape, the backdrop, or clicking outside closes it at any time; select
+   again and click /btw to reopen.
+
+<!-- screenshot slot: answer state — Q/A + context stat line + action row -->
+
+<!-- screenshot slot: read-only browser — ‹ k/N › pager + key hints -->
+
+### What it knows
+
+A side question sees exactly three things: the **newest N session messages**
+(N = the 侧问上下文条数 setting, 5–50, default 20; injected automatically, no
+opt-in), **your selection**, and **your question**. No tools, no network, no
+file access; if the answer is not in the given content the model says
+"当前会话内容里没有" instead of inventing one. The stat line under each answer
+shows how much context was actually injected (entries + chars) and warns
+explicitly when the injection came back empty — instead of leaving you
+guessing why an answer seems context-blind.
+
+<!-- screenshot slot: settings card — answer destination + side-question context entries -->
+
+### Design rationale
+
+- **"Never enters the conversation" is guaranteed by construction**: on each
+  request the host half reads the session log once, serializes it, fires one
+  direct `llm.stream` call, and returns the complete answer. No session is
+  created, no message is written, no tool is registered — the side question
+  has zero footprint on the main thread.
+- **Architecture shaped by the static-bundle constraint**: static plugin
+  bundles have no package-private host RPC, so the host half registers the
+  exact route `POST /plugins/dsh-selection-toolbar/btw` via `webServer`, and
+  the client uses a same-origin fetch with JSON both ways (details under
+  Architecture notes).
+- **Context has a budget**: a double budget on entries (5–50, adjustable) and
+  characters (24k), per-entry truncation, and a single omission banner — a
+  long session never quietly burns a huge number of tokens.
+- **Reading is never interrupted**: a `position: fixed` centered modal that
+  scrolling neither moves nor closes; compact height while composing/waiting,
+  locked at 440×480 while reading or browsing, so entries of different length
+  never resize it mid-browsing.
+- **Failures are visible**: missing services, unreadable sessions, model
+  errors, and the 120s timeout all surface as readable text inside the popup,
+  and the question you typed is never lost.
+
 ## Settings
 
 The plugin appears in **设置 → 插件 → 插件列表** as a native-style card — the
@@ -123,7 +201,8 @@ Then restart the web app so the new client bundle is picked up.
   exclude the composer, inputs, and contenteditable regions.
 - **Popup lifetime**: Escape / outside-click dismissal and the 询问
   focus-while-typing guard are unchanged; for the /btw console the
-  hide-on-scroll rule is explicitly relaxed to re-anchoring (see Features).
+  hide-on-scroll rule is explicitly relaxed — the console opens as a centered
+  modal that scrolling neither moves nor closes (see Features).
   All other actions behave exactly as before.
 - Fixed actions build fixed prefixes; the 询问 question caps at 2k chars and the
   selection at 20k chars to keep injected messages bounded; the /btw request
