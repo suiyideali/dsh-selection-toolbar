@@ -39,6 +39,20 @@ All notable changes to dsh-selection-toolbar are documented here.
   caps, message-count and character budgets), and streams one
   `llm.stream` call with the current default model (`agentDefaultModel`).
   Browser-side disconnects abort the in-flight call.
+- **/btw console visual pass**: the console is aligned with the app's own
+  design language — all colors come from dsh theme tokens
+  (`--dsw-alias-brand-primary` / `state-error-primary` / `bg-layer-2` /
+  `border-l2`…), so it adapts to light/dark themes. Structure: title row with
+  a brand-tinted bubble icon and a 「不进入对话 · 无工具」 badge; hairline-
+  separated two-line history (Q/A); Q-chip question row; answers rendered
+  through a minimal safe markdown renderer (React nodes only, never
+  innerHTML — fenced code blocks with language tag and horizontal scroll,
+  inline code, bold, lists); a pill input with focus ring and a brand send
+  button (disabled while empty); a pulsing-dots pending state with 取消;
+  split action row (复制 primary / 再问一个 ghost / 清空历史 danger-hover);
+  inverted-pill copy/clear toasts; error callouts in the error token color.
+  The 询问 inline input and the popup frame got the same pill/ radius/ shadow
+  treatment for visual consistency.
 - **答案去向 (answer destination) setting**: each of 询问 · 解释 · 翻译 · 总结
   can be individually routed 进主线 (original behavior) or 走侧问 (the /btw
   channel — the answer only renders in the popup and never enters the
