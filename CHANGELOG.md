@@ -6,6 +6,12 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Changed
 
+- **Quote no longer prefixes blank lines**: quoting a multi-paragraph
+  selection used to put `> ` on every line, producing a lone `>` on each
+  blank paragraph separator. Only content lines now carry the `> ` marker;
+  blank lines stay bare and runs of blank lines collapse to one, so the
+  composer shows a clean quote instead of a wall of `>` (structured content
+  — tables / code fences — keeps the existing single-marker lazy blockquote).
 - **Popup lifetime exception for the /btw console**: the console opens as a
   **fixed-size centered modal** (440×480, clamped to the viewport, dimmed
   backdrop) instead of hugging the selection — `position: fixed` keeps it

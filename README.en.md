@@ -18,7 +18,7 @@ context. Any action can also be routed to the **/btw side channel** in settings.
 | Action | Behavior |
 | --- | --- |
 | 复制 Copy | Copy the selected text to the clipboard. |
-| 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. |
+| 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. For multi-paragraph text only content lines carry `> ` — blank lines stay bare (consecutive blanks collapse to one) instead of forming a wall of lone `>` lines. |
 | 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the raw selection as a plain message. |
 | 解释 Explain | Send `请解释下面这段内容：` + selection. |
 | 翻译 Translate | Send `请把下面这段内容翻译成中文：` + selection. |
