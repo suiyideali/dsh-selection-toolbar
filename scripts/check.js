@@ -15,7 +15,7 @@ const fail = (msg) => {
 }
 
 // 1) JavaScript syntax — every shipped bundle must parse.
-for (const f of ['lib/index.js', 'lib/client.js']) {
+for (const f of ['lib/index.js', 'lib/client.js', 'lib/transcript.js']) {
   const file = path.join(root, f)
   if (!existsSync(file)) fail(`missing ${f}`)
   execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' })
