@@ -29,10 +29,11 @@ The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
 stays open while typing (focusing the input collapses the page selection without closing the popup).
 
 **/btw console exception**: the console does not hug the selection — it opens
-as a **fixed-size centered modal** (440×480, clamped to the viewport, with a
-dimmed backdrop). `position: fixed` keeps it immune to page scrolling, and the
-fixed frame stays visually stable while browsing history entries of different
-lengths. Click the backdrop or outside, or press Escape, to close; inside the
+as a **centered modal** with a dimmed backdrop. While composing or waiting the
+frame hugs its content; when reading an answer or browsing history it locks at
+440×480 (clamped to the viewport), so entries of different length never resize
+it mid-browsing. `position: fixed` keeps it immune to page scrolling. Click the
+backdrop or outside, or press Escape, to close; inside the
 input Esc closes and ↑ (on an empty input) opens history browsing, where
 ↑/↓ step through entries and Backspace or Esc returns to the latest. Whenever
 it closes, the answer has already been saved to the session's side-question

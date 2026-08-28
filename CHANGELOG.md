@@ -13,10 +13,12 @@ All notable changes to dsh-selection-toolbar are documented here.
   composer shows a clean quote instead of a wall of `>` (structured content
   — tables / code fences — keeps the existing single-marker lazy blockquote).
 - **Popup lifetime exception for the /btw console**: the console opens as a
-  **fixed-size centered modal** (440×480, clamped to the viewport, dimmed
-  backdrop) instead of hugging the selection — `position: fixed` keeps it
-  immune to page scrolling (neither moved nor closed), and the fixed frame
-  stays visually stable while browsing history entries of different lengths.
+  **centered modal** (dimmed backdrop) instead of hugging the selection —
+  `position: fixed` keeps it immune to page scrolling (neither moved nor
+  closed). Height is phase-dependent: composing/pending states hug their
+  content (no dead space under a short history), while reading an answer or
+  browsing history locks the frame at 440×480 (clamped to the viewport), so
+  entries of different length never resize it mid-browsing.
   Clicking the backdrop / outside, or Escape, closes it; the answer is saved
   to the per-session thread no matter how it closes. All other popup behavior
   (询问 focus guard, failure retry, etc.) is unchanged.
@@ -68,8 +70,9 @@ All notable changes to dsh-selection-toolbar are documented here.
   pager; ↑ goes older, ↓ newer, Backspace or Esc returns to the live view
   (the pager bar itself stays lean: just ‹ k/N › — no buttons/labels);
   history entries cannot be edited or deleted individually (only bulk
-  清空历史). The console frame is fixed at 440×480 (centered modal), so
-  entries of different length never resize it. The route response now carries
+  清空历史). While browsing, the console frame locks at 440×480 (centered
+  modal), so entries of different length never resize it mid-browsing; the
+  composing state stays compact. The route response now carries
   `contextEvents`/`contextChars` and the answer view shows 「上下文 · 已注入最近 N 条会话内容（X 字）」,
   turning an empty-context case into a visible warning
   (「上下文为空 · 本次仅基于划选内容作答」) plus a diagnostic line in the
