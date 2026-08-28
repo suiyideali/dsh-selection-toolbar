@@ -23,7 +23,7 @@ context. Any action can also be routed to the **/btw side channel** in settings.
 | 解释 Explain | Send `请解释下面这段内容：` + selection. |
 | 翻译 Translate | Send `请把下面这段内容翻译成中文：` + selection. |
 | 总结 Summarize | Send `请用简洁的语言总结下面这段内容：` + selection. |
-| /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Copy the answer, ask another, review/clear the per-session side-question thread. |
+| /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Works while the main task is running: the route bypasses the session queue and one shot is it. Copy the answer, ask another, clear the thread; the history area shows up to 5 entries — click one or press ↑/↓ to browse the full thread read-only (Esc returns to the latest). Each answer shows the context stats actually injected (entries + chars) and warns when the injection came back empty. |
 
 The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
 stays open while typing (focusing the input collapses the page selection

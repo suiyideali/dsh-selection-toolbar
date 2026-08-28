@@ -2,7 +2,7 @@
 // (lib/transcript.js). Run locally with `node --test test/`; CI runs the same.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { eventToLine, serializeTranscript, TOOL_RESULT_CAP } from '../lib/transcript.js'
+import { buildTranscript, eventToLine, serializeTranscript, TOOL_RESULT_CAP } from '../lib/transcript.js'
 
 const userMessage = (text) => ({ type: 'user/message', data: { content: [{ type: 'text', text }] } })
 const assistantMessage = (text) => ({
@@ -95,4 +95,20 @@ test('clamps out-of-range options', () => {
   assert.match(out, /已省略/)
   assert.ok(out.includes('m30'))
   assert.equal(out.split('[用户]').length - 1, 5)
+})
+
+test('buildTranscript reports injection stats alongside the text', () => {
+  const events = [userMessage('one'), assistantMessage('two'), userMessage('three')]
+  const info = buildTranscript(events)
+  assert.equal(info.used, 3)
+  assert.ok(info.chars > 0)
+  assert.equal(info.omitted, 0)
+  assert.equal(info.text, serializeTranscript(events))
+  const many = []
+  for (let i = 1; i <= 7; i++) many.push(userMessage('n' + i))
+  const capped = buildTranscript(many, { maxMessages: 5 })
+  assert.equal(capped.used, 5)
+  assert.equal(capped.omitted, 2)
+  assert.match(capped.text, /已省略/)
+  assert.deepEqual(buildTranscript([]), { text: '', used: 0, omitted: 0, chars: 0 })
 })
