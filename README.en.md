@@ -58,8 +58,6 @@ to the main job.
 - **Disposable, lightweight Q&A**: the answer lives only in the popup; closing
   it leaves nothing but a local history entry, with zero session side effects.
 
-<!-- screenshot slot: composing state — /btw clicked, button row morphs into the console (history + input) -->
-
 ### How to use
 
 1. Select some text (it becomes the side question's "selection" and travels
@@ -77,10 +75,6 @@ to the main job.
 6. Escape, the backdrop, or clicking outside closes it at any time; select
    again and click /btw to reopen.
 
-<!-- screenshot slot: answer state — Q/A + context stat line + action row -->
-
-<!-- screenshot slot: read-only browser — ‹ k/N › pager + key hints -->
-
 ### What it knows
 
 A side question sees exactly three things: the **newest N session messages**
@@ -91,8 +85,6 @@ file access; if the answer is not in the given content the model says
 shows how much context was actually injected (entries + chars) and warns
 explicitly when the injection came back empty — instead of leaving you
 guessing why an answer seems context-blind.
-
-<!-- screenshot slot: settings card — answer destination + side-question context entries -->
 
 ### Design rationale
 
