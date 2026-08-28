@@ -20,6 +20,7 @@ function brokenRepo(fields, patchText = '- insert:\n  - id: broken\n    name: br
   mkdirSync(path.join(dir, 'lib'), { recursive: true })
   writeFileSync(path.join(dir, 'lib/index.js'), 'export function apply() {}\n')
   writeFileSync(path.join(dir, 'lib/client.js'), 'window.__ModuleLoader__ = window.__ModuleLoader__ || { load() {} }\n')
+  writeFileSync(path.join(dir, 'lib/transcript.js'), 'export const cap = 1\n')
   writeFileSync(path.join(dir, 'package.json'), JSON.stringify(fields))
   writeFileSync(path.join(dir, 'cordis.patch.yml'), patchText)
   return dir

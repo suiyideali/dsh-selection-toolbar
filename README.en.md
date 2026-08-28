@@ -6,11 +6,12 @@
 English | [中文](README.md)
 
 Select text inside a DeepSeek Harness conversation and a small floating toolbar
-appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结**
-(copy · quote-reply · ask · explain · translate · summarize).
+appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · /btw**
+(copy · quote-reply · ask · explain · translate · summarize · /btw).
 
-All AI actions reuse the **current session** — the selected text is sent into
-the active conversation as a normal user message, so the model has full context.
+AI actions reuse the **current session** by default — the selected text is sent
+into the active conversation as a normal user message, so the model has full
+context. Any action can also be routed to the **/btw side channel** in settings.
 
 ## Features
 
@@ -22,10 +23,17 @@ the active conversation as a normal user message, so the model has full context.
 | 解释 Explain | Send `请解释下面这段内容：` + selection. |
 | 翻译 Translate | Send `请把下面这段内容翻译成中文：` + selection. |
 | 总结 Summarize | Send `请用简洁的语言总结下面这段内容：` + selection. |
+| /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Copy the answer, ask another, review/clear the per-session side-question thread. |
 
 The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
 stays open while typing (focusing the input collapses the page selection
 without closing the popup).
+
+**/btw console exception**: while the console is open, scrolling re-anchors the
+popup to the selection's anchor block instead of closing it (reading the answer
+is never interrupted); Escape, clicking elsewhere, or the anchor leaving the
+document closes it. Whenever it closes, the answer has already been saved to
+the session's side-question thread (localStorage, manual clear).
 
 ## Settings
 
@@ -34,8 +42,12 @@ same collapsible look as the built-in 终端 / 网页搜索 entries — with:
 
 - 弹窗出现延时 — delay before the toolbar appears after selecting (0–500 ms)
 - 功能开关 — toggle each toolbar entry individually (复制 · 引用 · 询问 ·
-  解释 · 翻译 · 总结); disabled entries disappear from the popup
+  解释 · 翻译 · 总结 · /btw); disabled entries disappear from the popup
   immediately, and 全部开启 re-enables everything at once
+- 答案去向 — per-action answer destination: 进主线 (original behavior, sent
+  into the conversation) or 走侧问 (/btw side channel, answer only in the popup)
+- 侧问上下文条数 — how many of the newest session messages a side question
+  carries as context (5–50, default 20)
 - 恢复默认 — reset all options
 
 Options persist in the browser (localStorage) and apply to the popup live,
@@ -71,6 +83,10 @@ Then restart the web app so the new client bundle is picked up.
   namespace-keyed `settings.plugin.item` slot, and the small host half serves
   the `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the
   card; on rc.6 the same registration satisfies the older list-slot contract.
+- The /btw side channel uses host-side core services `webServer` /
+  `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
+  composition, no new npm dependencies). If a service is missing the route is
+  not registered and the popup shows a readable error.
 
 ## Architecture notes
 
@@ -80,14 +96,34 @@ Then restart the web app so the new client bundle is picked up.
   native. The only host code registers the settings namespace (see
   Requirements) so the settings card is served on rc.8+; the card's option
   values stay in browser localStorage (client-only design).
+- **/btw side-question channel**: the static bundle has no package-private
+  host RPC (its factory only receives `require`), so the host half registers
+  an exact web route `POST /plugins/dsh-selection-toolbar/btw` via the
+  `webServer` service (exact routes win over the `/plugins` bundle prefix)
+  and the client talks to it with a same-origin `fetch`, JSON both ways. The
+  handler reads the session log with `sessionQuery.readSession`, serializes
+  the newest N events through `lib/transcript.js` (user/assistant messages,
+  tool calls and results, each individually capped), and feeds one direct
+  `llm.stream` call. **No session is created, no message is written, and the
+  model gets no tools** — ephemerality is guaranteed by construction.
+- **Side-question route trust domain**: the same as the dsh web app itself
+  (localhost, same origin as the page), with no extra auth; a browser-side
+  disconnect (popup closed) aborts the in-flight model call. Answers come
+  from the current default model (`agentDefaultModel`) and count toward
+  normal token usage.
 - **Quote insert** uses the official `inputActions.setDraft` standard prop from
   the `conversation.input.dock` slot. It deliberately avoids `sessions.scope()`
   + event bails, which the dynamic-plugin facade forbids (cross-context guard);
   the markdown blockquote is the same shape as other quote-reply plugins.
 - **Selections are scoped** to the message list (`[data-chat-flow]`) and
   exclude the composer, inputs, and contenteditable regions.
+- **Popup lifetime**: Escape / outside-click dismissal and the 询问
+  focus-while-typing guard are unchanged; for the /btw console the
+  hide-on-scroll rule is explicitly relaxed to re-anchoring (see Features).
+  All other actions behave exactly as before.
 - Fixed actions build fixed prefixes; the 询问 question caps at 2k chars and the
-  selection at 20k chars to keep injected messages bounded.
+  selection at 20k chars to keep injected messages bounded; the /btw request
+  body is capped at 512 KB.
 
 ## License
 
