@@ -59,14 +59,18 @@ All notable changes to dsh-selection-toolbar are documented here.
   area now shows up to five recent exchanges (the rest folds behind a
   「还有 N 条更早 · ↑ 继续翻」 line). Any entry can be clicked — or ↑/↓
   pressed from an empty input — to open a read-only viewer with a ‹ k/N ›
-  pager; ↑ goes older, ↓ newer, Backspace or Esc or 返回最新 returns to the
-  live view; history entries cannot be edited or deleted individually (only
-  bulk 清空历史). The console frame is fixed at 440×480 (centered modal), so
+  pager; ↑ goes older, ↓ newer, Backspace or Esc returns to the live view
+  (the pager bar itself stays lean: just ‹ k/N › — no buttons/labels);
+  history entries cannot be edited or deleted individually (only bulk
+  清空历史). The console frame is fixed at 440×480 (centered modal), so
   entries of different length never resize it. The route response now carries
   `contextEvents`/`contextChars` and the answer view shows 「上下文 · 已注入最近 N 条会话内容（X 字）」,
   turning an empty-context case into a visible warning
   (「上下文为空 · 本次仅基于划选内容作答」) plus a diagnostic line in the
-  dsh server log, instead of a silent miss.
+  dsh server log, instead of a silent miss. When the running host half
+  predates the stats fields, the stat line is omitted entirely rather than
+  falsely claiming the context was empty (context injection itself has always
+  been automatic — no opt-in needed, tuned by 侧问上下文条数).
 - **答案去向 (answer destination) setting**: each of 询问 · 解释 · 翻译 · 总结
   can be individually routed 进主线 (original behavior) or 走侧问 (the /btw
   channel — the answer only renders in the popup and never enters the
