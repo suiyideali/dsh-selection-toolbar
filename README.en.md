@@ -23,17 +23,20 @@ context. Any action can also be routed to the **/btw side channel** in settings.
 | 解释 Explain | Send `请解释下面这段内容：` + selection. |
 | 翻译 Translate | Send `请把下面这段内容翻译成中文：` + selection. |
 | 总结 Summarize | Send `请用简洁的语言总结下面这段内容：` + selection. |
-| /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Works while the main task is running: the route bypasses the session queue and one shot is it. Copy the answer, ask another, clear the thread; the history area shows up to 5 entries — click one or press ↑/↓ to browse the full thread read-only (Esc returns to the latest). Each answer shows the context stats actually injected (entries + chars) and warns when the injection came back empty. |
+| /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Works while the main task is running: the route bypasses the session queue and one shot is it. The console opens as a **fixed-size (440×480) centered modal** that page scrolling never moves. Copy the answer, ask another, clear the thread; the history area shows up to 5 entries — click one or press ↑/↓ to browse the full thread read-only (Backspace / Esc returns to the latest). Each answer shows the context stats actually injected (entries + chars) and warns when the injection came back empty. |
 
 The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
-stays open while typing (focusing the input collapses the page selection
-without closing the popup).
+stays open while typing (focusing the input collapses the page selection without closing the popup).
 
-**/btw console exception**: while the console is open, scrolling re-anchors the
-popup to the selection's anchor block instead of closing it (reading the answer
-is never interrupted); Escape, clicking elsewhere, or the anchor leaving the
-document closes it. Whenever it closes, the answer has already been saved to
-the session's side-question thread (localStorage, manual clear).
+**/btw console exception**: the console does not hug the selection — it opens
+as a **fixed-size centered modal** (440×480, clamped to the viewport, with a
+dimmed backdrop). `position: fixed` keeps it immune to page scrolling, and the
+fixed frame stays visually stable while browsing history entries of different
+lengths. Click the backdrop or outside, or press Escape, to close; inside the
+input Esc closes and ↑ (on an empty input) opens history browsing, where
+↑/↓ step through entries and Backspace or Esc returns to the latest. Whenever
+it closes, the answer has already been saved to the session's side-question
+thread (localStorage, manual clear).
 
 ## Settings
 

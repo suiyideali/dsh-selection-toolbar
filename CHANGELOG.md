@@ -6,12 +6,14 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Changed
 
-- **Popup lifetime exception for the /btw console**: while a /btw side-question
-  console is open, scrolling re-anchors the popup to the selection's anchor
-  block instead of hiding it (reading the answer must not be interrupted);
-  Escape / outside click / the anchor leaving the document still close it, and
-  the answer is saved to the per-session thread no matter how it closes. All
-  other popup behavior (询问 focus guard, failure retry, etc.) is unchanged.
+- **Popup lifetime exception for the /btw console**: the console opens as a
+  **fixed-size centered modal** (440×480, clamped to the viewport, dimmed
+  backdrop) instead of hugging the selection — `position: fixed` keeps it
+  immune to page scrolling (neither moved nor closed), and the fixed frame
+  stays visually stable while browsing history entries of different lengths.
+  Clicking the backdrop / outside, or Escape, closes it; the answer is saved
+  to the per-session thread no matter how it closes. All other popup behavior
+  (询问 focus guard, failure retry, etc.) is unchanged.
 - **询问 Ask is now a real question entry**: clicking it opens an inline input;
   Enter sends `你的问题 + selection`. Leaving the input empty sends the raw
   selection as a plain message (one-click pass-through, replaces the old plain
@@ -57,10 +59,11 @@ All notable changes to dsh-selection-toolbar are documented here.
   area now shows up to five recent exchanges (the rest folds behind a
   「还有 N 条更早 · ↑ 继续翻」 line). Any entry can be clicked — or ↑/↓
   pressed from an empty input — to open a read-only viewer with a ‹ k/N ›
-  pager; ↑ goes older, ↓ newer, Esc or 返回最新 returns to the live view;
-  history entries cannot be edited or deleted individually (only bulk
-  清空历史). The route response now carries `contextEvents`/`contextChars`
-  and the answer view shows 「上下文 · 已注入最近 N 条会话内容（X 字）」,
+  pager; ↑ goes older, ↓ newer, Backspace or Esc or 返回最新 returns to the
+  live view; history entries cannot be edited or deleted individually (only
+  bulk 清空历史). The console frame is fixed at 440×480 (centered modal), so
+  entries of different length never resize it. The route response now carries
+  `contextEvents`/`contextChars` and the answer view shows 「上下文 · 已注入最近 N 条会话内容（X 字）」,
   turning an empty-context case into a visible warning
   (「上下文为空 · 本次仅基于划选内容作答」) plus a diagnostic line in the
   dsh server log, instead of a silent miss.
