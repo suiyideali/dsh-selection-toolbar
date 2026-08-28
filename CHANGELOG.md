@@ -63,10 +63,11 @@ All notable changes to dsh-selection-toolbar are documented here.
   inverted-pill copy/clear toasts; error callouts in the error token color.
   The 询问 inline input and the popup frame got the same pill/ radius/ shadow
   treatment for visual consistency.
-- **/btw history browsing (read-only) & context observability**: the history
-  area now shows up to five recent exchanges (the rest folds behind a
-  「还有 N 条更早 · ↑ 继续翻」 line). Any entry can be clicked — or ↑/↓
-  pressed from an empty input — to open a read-only viewer with a ‹ k/N ›
+- **/btw history browsing (read-only) & context observability**: the composing
+  state lists up to five recent exchanges (the rest folds behind a
+  「还有 N 条更早 · ↑ 继续翻」 line); the answer view stacks nothing below
+  it — press ↑ on an answer to browse. Any entry can be clicked, or ↑
+  pressed, to open a read-only viewer with a ‹ k/N ›
   pager; ↑ goes older, ↓ newer, Backspace or Esc returns to the live view
   (the pager bar itself stays lean: just ‹ k/N › — no buttons/labels);
   history entries cannot be edited or deleted individually (only bulk
