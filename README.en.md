@@ -66,7 +66,7 @@ to the main job.
    side-question console.
 3. Type a question and press Enter; while waiting a pulse animation plays and
    you can cancel at any time.
-4. The answer renders in place (code blocks, bold, lists supported); copy the
+4. The answer renders in place (code blocks, bold, lists, tables supported); copy the
    raw markdown, ask another, or clear the thread.
 5. Review earlier side questions: in the composing state click a history entry
    (or press ↑ on an empty input); on an answer just press ↑. ↑/↓ step through
