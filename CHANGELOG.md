@@ -4,6 +4,22 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- **/btw answers now render markdown tables**: the /btw answer renderer only
+  knew paragraphs, lists, headings and code, so a table in a side-question
+  reply fell through as raw `| a | b |` paragraph lines. GFM tables (with or
+  without surrounding pipes) now render as real `<table>` blocks with styled
+  header/body cells; inline code and bold still work inside cells, pipes
+  inside `` `code` `` spans are not treated as cell separators, and prose
+  that merely contains a pipe stays plain paragraphs. Tables inside fenced
+  code blocks are untouched.
+- **Style injection now refreshes the `<style>` tag instead of skipping when
+  one already exists**: a stale tag left in the DOM by a plugin bundle reload
+  (HMR / hot swap without a full page refresh) used to keep the previous
+  CSS_TEXT forever, so newer style rules (e.g. the table borders above) were
+  silently missing even though the new JS ran.
+
 ## [1.1.0] - 2026-08-28
 
 ### Changed
