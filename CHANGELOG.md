@@ -6,6 +6,23 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **Quoting a rendered table or code block keeps its structure**: a `<table>`'s
+  cells are tab-separated in the text layer (no pipes at all) and a `<pre>` has
+  no fence, so quoting the plain selection produced content that no longer
+  rendered as a table or a code block. The quote path now serializes the
+  *selected DOM* instead — tables become GFM tables (header taken from `<th>`,
+  ragged rows padded, `|` escaped inside cells, an empty header emitted when the
+  table has no header cells so no data row is promoted) and code becomes a
+  fenced block with its `language-*` info string and a fence grown past any
+  backticks in the body. Partial selections stay partial (a half-selected code
+  block quotes only the selected lines). Structured quotes also prefix *every*
+  line with `> `: the old single-prefix "lazy blockquote" only survives for
+  plain paragraphs, which is exactly why a quoted table collapsed into raw text
+  and a quoted fence lost its closing marker.
+- **Inline `<code>` no longer forces a prose selection into the structured
+  branch**: only block-level `<table>` / `<pre>` count as structured, so quoting
+  prose that merely contains inline code keeps the clean paragraph style.
+
 - **Actions no longer act on an empty session id**: on the desktop app the
   popup resolved no session at all — the overlay's `sessions.current` was empty
   while the composer-dock slot carried the real id — so 「引用」 always failed
