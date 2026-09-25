@@ -6,6 +6,21 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **The selection popup can no longer be placed outside the viewport**: the
+  popup is `position: fixed` and only its horizontal position was clamped, so a
+  selection anchored in the top ~140px of the window that was also taller than
+  the space left below it (a large table, a long code block) got
+  `top = rect.bottom + 8` — below the bottom edge, invisible, which reads as
+  "selecting text does nothing". Placement now flips to the other side when the
+  preferred one cannot hold the popup, and a final clamp keeps the box inside
+  the viewport. A short window (the desktop app) hit this far more often than a
+  maximised browser tab, which is why the toolbar looked browser-only.
+- **Selections whose `Selection.toString()` comes back empty are no longer
+  dropped**: the transcript virtualizes off-screen message containers with
+  `content-visibility: hidden`, where the rendered-text route returns an empty
+  string even though the DOM text is intact. The range fragment collected for
+  the structured-content check now doubles as a DOM-text fallback, keeping
+  tabs/newlines so the quote path still sees table/code structure.
 - **Adapted to `@deepseek-ai/dsh` 0.1.2**: the host half no longer imports the
   removed `settingsNamespace` brand helper — `settings.register` now takes the
   raw namespace string (0.1.2 validates it internally) — and `dsh.client.inject`
