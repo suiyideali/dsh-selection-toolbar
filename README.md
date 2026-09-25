@@ -117,20 +117,24 @@ cd dsh-selection-toolbar && pnpm install   # 或：npm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
 
-host 半端依赖 `@deepseek-ai/dsh-settings` 与 `@deepseek-ai/schemastery`
-（已在 `package.json` 声明），从本地路径安装前请先装好 checkout 的依赖；
-从 GitHub 安装会自动解析这些依赖。
+桌面端的 `desktop` profile 由 Electron 应用独占管理，命令行添加会被拒绝
+（`profile "desktop" is managed exclusively by the Electron application`）。
+桌面端请在应用内的 **设置 → 插件 → 添加插件** 里填同一个地址
+`github:suiyideali/dsh-selection-toolbar`。
 
-装完后重启 web 应用以加载新的 client bundle。
+host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明）。
+从本地路径安装前请先装好 checkout 的依赖；从 GitHub 安装会自动解析。
+
+装完后重启应用以加载新的 client bundle。
 
 ## 依赖
 
-- dsh web（已在 v0.1.0-rc.6 与 v0.1.0-rc.8 上测试）
-- profile 需已挂载 `@deepseek-ai/dsh-client-runtime`（`web` profile 默认
-  自带）。自 rc.8 起设置卡片通过按设置命名空间分发的
-  `settings.plugin.item` keyed 槽注册，插件的小型 host 半端会注册
-  `dsh-selection-toolbar` 命名空间，设置 → 插件 才会派发这张卡片；
-  rc.6 下同一份注册满足旧的 list 槽契约。
+- dsh web（适配 0.1.2 起的 host 契约）
+- profile 需已挂载 `@deepseek-ai/dsh-cordis-client-runner`（0.1.2 起取代
+  了 `@deepseek-ai/dsh-client-runtime`；`web` profile 默认自带）。设置卡片
+  通过按设置命名空间分发的 `settings.plugin.item` keyed 槽注册，插件的
+  小型 host 半端会注册 `dsh-selection-toolbar` 命名空间，设置 → 插件 才会
+  派发这张卡片。
 - /btw 侧问依赖 host 侧核心服务 `webServer` / `sessionQuery` /
   `agentDefaultModel` / `llm`（均为 dsh host 组合自带，无新增 npm 依赖）。
   服务缺失时路由不注册，侧问弹窗内会给出可读错误。

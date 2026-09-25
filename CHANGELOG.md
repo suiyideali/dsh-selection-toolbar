@@ -6,6 +6,15 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **Adapted to `@deepseek-ai/dsh` 0.1.2**: the host half no longer imports the
+  removed `settingsNamespace` brand helper — `settings.register` now takes the
+  raw namespace string (0.1.2 validates it internally) — and `dsh.client.inject`
+  names `@deepseek-ai/dsh-cordis-client-runner` instead of the removed
+  `@deepseek-ai/dsh-client-runtime`. The now-unused
+  `@deepseek-ai/dsh-settings` dependency was dropped, so the package's only
+  runtime dependency is `@deepseek-ai/schemastery`. On 0.1.2 and later the
+  settings card registers through the namespace-keyed `settings.plugin.item`
+  slot.
 - **/btw answers now render markdown tables**: the /btw answer renderer only
   knew paragraphs, lists, headings and code, so a table in a side-question
   reply fell through as raw `| a | b |` paragraph lines. GFM tables (with or

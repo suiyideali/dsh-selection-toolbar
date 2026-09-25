@@ -142,21 +142,26 @@ cd dsh-selection-toolbar && pnpm install   # or: npm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
 
-The host half depends on `@deepseek-ai/dsh-settings` and
-`@deepseek-ai/schemastery` (declared in `package.json`), so install the
-checkout's dependencies before adding it from a local path; installing from
-GitHub resolves them automatically.
+The desktop app's `desktop` profile is managed exclusively by the Electron
+application — the CLI refuses it (`profile "desktop" is managed exclusively by
+the Electron application`). Add the plugin from inside the app instead, through
+**Settings → Plugins → Add plugin**, with the same address
+`github:suiyideali/dsh-selection-toolbar`.
 
-Then restart the web app so the new client bundle is picked up.
+The host half depends only on `@deepseek-ai/schemastery` (declared in
+`package.json`), so install the checkout's dependencies before adding it from a
+local path; installing from GitHub resolves them automatically.
+
+Then restart the app so the new client bundle is picked up.
 
 ## Requirements
 
-- dsh web (v0.1.0-rc.6 and v0.1.0-rc.8 tested)
-- The profile must already mount `@deepseek-ai/dsh-client-runtime` (standard in
-  the `web` profile). Since rc.8 the settings card registers through the
-  namespace-keyed `settings.plugin.item` slot, and the small host half serves
-  the `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the
-  card; on rc.6 the same registration satisfies the older list-slot contract.
+- dsh web (adapts to the host contract from 0.1.2 onwards)
+- The profile must already mount `@deepseek-ai/dsh-cordis-client-runner`
+  (`@deepseek-ai/dsh-client-runtime` before 0.1.2; standard in the `web`
+  profile). The settings card registers through the namespace-keyed
+  `settings.plugin.item` slot, and the small host half serves the
+  `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the card.
 - The /btw side channel uses host-side core services `webServer` /
   `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
   composition, no new npm dependencies). If a service is missing the route is
