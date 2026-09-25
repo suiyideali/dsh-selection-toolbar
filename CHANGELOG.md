@@ -6,6 +6,14 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **Actions no longer act on an empty session id**: on the desktop app the
+  popup resolved no session at all — the overlay's `sessions.current` was empty
+  while the composer-dock slot carried the real id — so 「引用」 always failed
+  its bridge check, 解释/翻译/总结 answered 「找不到该会话的活跃实例」
+  (`binding(undefined)`) and `/btw` returned `400 缺少 sessionId`. The popup now
+  falls back to the composer's session id (with a one-time console note) instead
+  of acting on an empty one.
+
 - **「复制」falls back to `execCommand` when the async clipboard API
   rejects**: the fallback previously ran only when `navigator.clipboard` was
   absent, so an Electron permission denial surfaced as a bare 「操作失败」
