@@ -6,6 +6,18 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **「复制」falls back to `execCommand` when the async clipboard API
+  rejects**: the fallback previously ran only when `navigator.clipboard` was
+  absent, so an Electron permission denial surfaced as a bare 「操作失败」
+  without ever attempting a copy.
+- **A failed action no longer leaves a stale 「操作失败」 in the popup**: the
+  status used to clear only from `refresh()`, which is suppressed while the
+  pointer is inside the popup — so a single failure made every later button
+  look broken. Each in-popup interaction now starts from a clean status, and
+  previously swallowed failures log a `[dsh-selection-toolbar]` reason to the
+  console (clipboard rejection, prompt failure, unavailable quote bridge,
+  ignored action) instead of being invisible.
+
 - **The selection popup can no longer be placed outside the viewport**: the
   popup is `position: fixed` and only its horizontal position was clamped, so a
   selection anchored in the top ~140px of the window that was also taller than
