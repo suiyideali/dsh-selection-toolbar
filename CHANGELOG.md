@@ -6,6 +6,41 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **Actions no longer act on an empty session id**: on the desktop app the
+  popup resolved no session at all — the overlay's `sessions.current` was empty
+  while the composer-dock slot carried the real id — so 「引用」 always failed
+  its bridge check, 解释/翻译/总结 answered 「找不到该会话的活跃实例」
+  (`binding(undefined)`) and `/btw` returned `400 缺少 sessionId`. The popup now
+  falls back to the composer's session id (with a one-time console note) instead
+  of acting on an empty one.
+
+- **「复制」falls back to `execCommand` when the async clipboard API
+  rejects**: the fallback previously ran only when `navigator.clipboard` was
+  absent, so an Electron permission denial surfaced as a bare 「操作失败」
+  without ever attempting a copy.
+- **A failed action no longer leaves a stale 「操作失败」 in the popup**: the
+  status used to clear only from `refresh()`, which is suppressed while the
+  pointer is inside the popup — so a single failure made every later button
+  look broken. Each in-popup interaction now starts from a clean status, and
+  previously swallowed failures log a `[dsh-selection-toolbar]` reason to the
+  console (clipboard rejection, prompt failure, unavailable quote bridge,
+  ignored action) instead of being invisible.
+
+- **The selection popup can no longer be placed outside the viewport**: the
+  popup is `position: fixed` and only its horizontal position was clamped, so a
+  selection anchored in the top ~140px of the window that was also taller than
+  the space left below it (a large table, a long code block) got
+  `top = rect.bottom + 8` — below the bottom edge, invisible, which reads as
+  "selecting text does nothing". Placement now flips to the other side when the
+  preferred one cannot hold the popup, and a final clamp keeps the box inside
+  the viewport. A short window (the desktop app) hit this far more often than a
+  maximised browser tab, which is why the toolbar looked browser-only.
+- **Selections whose `Selection.toString()` comes back empty are no longer
+  dropped**: the transcript virtualizes off-screen message containers with
+  `content-visibility: hidden`, where the rendered-text route returns an empty
+  string even though the DOM text is intact. The range fragment collected for
+  the structured-content check now doubles as a DOM-text fallback, keeping
+  tabs/newlines so the quote path still sees table/code structure.
 - **Adapted to `@deepseek-ai/dsh` 0.1.2**: the host half no longer imports the
   removed `settingsNamespace` brand helper — `settings.register` now takes the
   raw namespace string (0.1.2 validates it internally) — and `dsh.client.inject`
