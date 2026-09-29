@@ -18,7 +18,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | `lib/index.js` | Host: registers the settings namespace (rc.8+ keyed contract); serves the `/btw` route (`POST /plugins/dsh-selection-toolbar/btw`, one direct `llm.stream` call) | **Restart dsh web** |
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
 | `lib/transcript.js` | Session-log serialization (the `/btw` context slice) | Unit-tested |
-| `test/*.test.js` | `node:test` suites (health / transcript / btw-render) | — |
+| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission) | — |
 | `scripts/check.js` | Repo health gate (syntax + manifest contract); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
 
@@ -40,9 +40,16 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
    `insertCss()` must keep **overwriting the tag's `textContent`** on every load
    (do not revert to "skip if a tag exists" — that silently froze old styles
    after hot reloads; historical incident).
-5. **`/btw` route trust domain = dsh web itself** (same origin, no extra auth):
-   never expose out-of-scope capability through it; think about auth before
-   adding anything sensitive.
+5. **`/btw` route admission is enforced by the handler itself**: the route is
+   registered on the raw `webServer` carrier, which adds no request-time control
+   (it picks a route by pathname and calls the handler), so `requestAdmission` in
+   `lib/index.js` must keep applying the deployment's
+   `connection.requestRejection` verdict — falling back to the equivalent local
+   loopback Host/Origin/Sec-Fetch-Site fence when that service is missing or its
+   call fails — plus a JSON `Content-Type`, before any session read or model
+   call. Never remove or weaken it, and never expose further out-of-scope
+   capability through the route. `test/btw-admission.test.js` is the regression
+   gate for this rule.
 
 ## Verification
 
@@ -100,5 +107,5 @@ dsh releases (rc.8+ keyed `settings.plugin.item`, `@deepseek-ai/dsh-cordis-clien
 ## Suggested reading order
 
 `README.md` (usage/design) → `lib/index.js` header comment (host jobs + `/btw`
-semantics) → `lib/client.js` header comment + the `btwRenderAnswer` renderer
-section → the three suites under `test/`.
+semantics + the admission fence) → `lib/client.js` header comment + the
+`btwRenderAnswer` renderer section → the four suites under `test/`.

@@ -4,6 +4,20 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+### Security
+
+- **`/btw` 路由现在自己校验请求来源**：该路由注册在裸 `webServer` 载体上，
+  而载体不做任何请求期校验，部署自己的浏览器信任围栏（Host / Origin /
+  `Sec-Fetch-Site`）与浏览器会话认证只存在于 `/api` 通道内部，因此恶意页面
+  可以用 DNS rebinding（攻击者域名解析到 127.0.0.1）或跨站「简单请求」让
+  本机读取操作者会话，并在操作者凭据上产生一次计费模型调用。现在 handler 在
+  任何会话读取与模型调用之前先做准入：优先复用部署 `connection` 服务的
+  `requestRejection`（与 `/api` 同一套判定，含 `--trusted-host` 与浏览器
+  会话），服务缺失或调用失败时回退到等价的本地围栏（只接受 loopback Host、
+  拒绝 `Sec-Fetch-Site: cross-site`、要求 `Origin` 与 `Host` 同权威），并始终
+  要求 `Content-Type: application/json`。合法页面（同源、JSON、带会话
+  cookie）行为不变；新增 `test/btw-admission.test.js` 作为回归门禁。
+
 ### Fixed
 
 - **Quoting a rendered table or code block keeps its structure**: a `<table>`'s
