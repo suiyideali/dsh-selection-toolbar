@@ -12,11 +12,50 @@
 // POST /plugins/dsh-selection-toolbar/btw and spending the operator's model
 // credentials.
 //
+// Like test/btw-render.test.js this suite must run with NO installed
+// dependencies: CI runs `node --test` on a bare checkout (ci.yml installs
+// nothing), while lib/index.js imports `@deepseek-ai/schemastery` for its
+// settings schema. So the host source is read as text, its import lines and
+// `export` keywords are stripped, and it is evaluated with a stub for that one
+// dependency — the handler under test is still the shipped source text.
+// `buildTranscript` comes from lib/transcript.js, which has no imports.
+//
 // Run locally with `node --test test/`; CI runs the same command.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
-import { apply } from '../lib/index.js'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+import { buildTranscript, DEFAULT_MAX_MESSAGES } from '../lib/transcript.js'
+
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
+
+// ---- load the shipped host half without its runtime dependency ------------
+
+const hostSource = readFileSync(path.join(root, 'lib', 'index.js'), 'utf8')
+const hostBody = hostSource.replace(/^import .*$/gm, '').replace(/^export /gm, '')
+assert.doesNotMatch(hostBody, /^import /m, 'every import line must be stripped for the CI-safe evaluation')
+assert.doesNotMatch(hostBody, /^export /m, 'every export keyword must be stripped for the CI-safe evaluation')
+
+// Only the settings schema touches `z`; it is never registered in this suite.
+const zStub = {
+  number: () => ({ default: () => ({}) }),
+  string: () => ({}),
+  array: () => ({ default: () => ({}) }),
+  object: () => ({})
+}
+
+const host = new Function(
+  'z',
+  'buildTranscript',
+  'DEFAULT_MAX_MESSAGES',
+  hostBody + '\nreturn { apply, handleBtw, requestAdmission, contentTypeRejection }\n'
+)(zStub, buildTranscript, DEFAULT_MAX_MESSAGES)
+
+for (const name of ['apply', 'handleBtw', 'requestAdmission', 'contentTypeRejection']) {
+  assert.equal(typeof host[name], 'function', `expected lib/index.js to define ${name}`)
+}
 
 // ---- fabricated node:http halves -----------------------------------------
 
@@ -54,7 +93,7 @@ function makeRes() {
 
 // ---- fabricated host services --------------------------------------------
 
-function makeHarness({ connection, withModelCall = true } = {}) {
+function makeHarness({ connection } = {}) {
   const calls = { readSession: [], llm: [] }
   const services = {
     connection,
@@ -68,11 +107,9 @@ function makeHarness({ connection, withModelCall = true } = {}) {
           ]
         }
       }
-    }
-  }
-  if (withModelCall) {
-    services.agentDefaultModel = { currentSelection: () => ({ provider: 'stub-provider', model: 'stub-model' }) }
-    services.llm = {
+    },
+    agentDefaultModel: { currentSelection: () => ({ provider: 'stub-provider', model: 'stub-model' }) },
+    llm: {
       stream(options) {
         calls.llm.push(options)
         return (async function* () {
@@ -93,10 +130,10 @@ function makeHarness({ connection, withModelCall = true } = {}) {
       }
     }
   }
-  apply(ctx)
+  host.apply(ctx)
   assert.ok(route, 'apply() must register the /btw route')
   assert.equal(route.path, '/plugins/dsh-selection-toolbar/btw')
-  return { handler: route.handler, calls, services }
+  return { handler: route.handler, calls }
 }
 
 // The registered route handler is fire-and-forget (it attaches a .catch and
@@ -123,7 +160,7 @@ const LOOPBACK_HEADERS = { host: '127.0.0.1:19387', 'content-type': 'application
 
 test('the reported attack payload is refused and never spends model quota', async () => {
   // Exactly the request shape from the finding: cross-site "simple" POST, no
-  // cookie, attacker Host we could not forge against a fenced transport.
+  // cookie, attacker Host that a fenced transport would reject.
   const harness = makeHarness()
   const res = await call(harness, {
     headers: {
