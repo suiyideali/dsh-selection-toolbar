@@ -154,8 +154,15 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
   N 条（用户/助手消息、工具调用与结果，逐条带截断），拼进一次性
   `llm.stream` 调用，完整答案返回后由弹窗渲染。**全程不创建会话、不写
   任何消息、不给模型任何工具**——「即用即弃」由构造保证。
-- **侧问路由的信任域**：与 dsh web 应用本体相同（localhost、与页面同源），
-  不做额外鉴权；浏览器侧断开（关闭弹窗）会中止进行中的模型调用。
+- **侧问路由的准入**：路由注册在裸 `webServer` 载体上，而载体自身不做任何
+  请求期校验（只按 pathname 选路由后调用 handler），因此 handler 自己把关：
+  优先复用部署 `connection` 服务的 `requestRejection`——与 `/api` 同一套
+  Host/Origin/browser-session 判定，因此 `--trusted-host` 等配置同样生效；
+  服务缺失或调用失败时回退到等价的本地围栏（只接受 loopback Host、拒绝
+  `Sec-Fetch-Site: cross-site`、要求 `Origin` 与 `Host` 同权威），并始终要求
+  `Content-Type: application/json`。否则 DNS rebinding（攻击者域名解析到
+  127.0.0.1）或跨站页面就能把「读一份会话 + 一次计费模型调用」当作免费资源
+  使用。浏览器侧断开（关闭弹窗）仍会中止进行中的模型调用。
   答案由当前默认模型（`agentDefaultModel`）生成，计入正常 token 消耗。
 - **引用插入**走 `conversation.input.dock` 槽位官方标准 prop
   `inputActions.setDraft`，刻意避开 `sessions.scope()` + 事件 bail（动态

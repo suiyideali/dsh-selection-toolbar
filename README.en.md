@@ -185,9 +185,18 @@ Then restart the app so the new client bundle is picked up.
   tool calls and results, each individually capped), and feeds one direct
   `llm.stream` call. **No session is created, no message is written, and the
   model gets no tools** — ephemerality is guaranteed by construction.
-- **Side-question route trust domain**: the same as the dsh web app itself
-  (localhost, same origin as the page), with no extra auth; a browser-side
-  disconnect (popup closed) aborts the in-flight model call. Answers come
+- **Side-question route admission**: the route is registered on the raw
+  `webServer` carrier, which applies no request-time control of its own (it
+  picks a route by pathname and calls the handler), so the handler gates itself:
+  it prefers the deployment's `connection.requestRejection` — the same
+  Host/Origin/browser-session verdict `/api` uses, so a `--trusted-host`
+  configuration is honoured — and falls back to an equivalent local fence (loopback
+  `Host` only, no `Sec-Fetch-Site: cross-site`, `Origin` authority must match
+  `Host`) when that service is missing or its call fails; either way the body must
+  be `application/json`. Without this, DNS rebinding (an attacker hostname
+  resolving to 127.0.0.1) or a cross-site page could use "read a session + one
+  billed model call" as a free resource. A browser-side disconnect (popup closed)
+  still aborts the in-flight model call. Answers come
   from the current default model (`agentDefaultModel`) and count toward
   normal token usage.
 - **Quote insert** uses the official `inputActions.setDraft` standard prop from
