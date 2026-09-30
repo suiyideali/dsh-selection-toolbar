@@ -36,7 +36,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.0"
+    "@deepseek-ai/schemastery": "3.18.4"
   },
   "keywords": [
     "deepseek",

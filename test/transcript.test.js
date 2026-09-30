@@ -2,7 +2,7 @@
 // (lib/transcript.js). Run locally with `node --test test/`; CI runs the same.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildTranscript, eventToLine, serializeTranscript, TOOL_RESULT_CAP } from '../lib/transcript.js'
+import { buildTranscript, eventToLine, sanitizeTranscriptText, serializeTranscript, TOOL_RESULT_CAP } from '../lib/transcript.js'
 
 const userMessage = (text) => ({ type: 'user/message', data: { content: [{ type: 'text', text }] } })
 const assistantMessage = (text) => ({
@@ -111,4 +111,50 @@ test('buildTranscript reports injection stats alongside the text', () => {
   assert.equal(capped.omitted, 2)
   assert.match(capped.text, /已省略/)
   assert.deepEqual(buildTranscript([]), { text: '', used: 0, omitted: 0, chars: 0 })
+})
+
+// ---- transcript text is data: no invisible formatting reaches the prompt ----
+
+test('invisible control and bidi code points are dropped', () => {
+  // A tool result is whatever the agent read, so it can carry text that hides or
+  // reorders what the operator (and the model) sees.
+  const hostile = 'safe\u202Etxet desrever\u202C\u200B hidden\u2066isolate\u2069\u0007bell\uFEFF'
+  const clean = sanitizeTranscriptText(hostile)
+  assert.equal(clean, 'safetxet desrever hiddenisolatebell')
+  for (const ch of ['\u202E', '\u202C', '\u200B', '\u2066', '\u2069', '\u0007', '\uFEFF']) {
+    assert.ok(!clean.includes(ch), `must drop ${JSON.stringify(ch)}`)
+  }
+})
+
+test('legitimate whitespace and ZWNJ/ZWJ survive sanitization', () => {
+  assert.equal(sanitizeTranscriptText('a\tb\nc\rd'), 'a\tb\nc\rd')
+  assert.equal(sanitizeTranscriptText('👩\u200D💻 \u0645\u200C\u0646'), '👩\u200D💻 \u0645\u200C\u0646')
+})
+
+test('line and paragraph separators become real newlines', () => {
+  assert.equal(sanitizeTranscriptText('one\u2028two\u2029three'), 'one\ntwo\nthree')
+})
+
+test('sanitization applies to every event kind, including tool arguments', () => {
+  const events = [
+    userMessage('u\u200B1'),
+    assistantMessage('a\u202E2'),
+    toolCall('read', '{"p":"x\u200By"}'),
+    toolResult('r\u2066z')
+  ]
+  const out = serializeTranscript(events)
+  for (const ch of ['\u200B', '\u202E', '\u2066']) {
+    assert.ok(!out.includes(ch), `the serialized transcript must not carry ${JSON.stringify(ch)}`)
+  }
+  assert.match(out, /\[用户\] u1/)
+  assert.match(out, /\[工具结果\] rz/)
+})
+
+test('sanitization happens before the length cap is applied', () => {
+  // 500 invisible characters must not consume the visible budget.
+  const padded = '\u200B'.repeat(500) + 'visible'
+  assert.equal(sanitizeTranscriptText(padded), 'visible')
+  const out = serializeTranscript([toolResult(padded)])
+  assert.match(out, /visible/)
+  assert.ok(!out.includes('截断'), 'dropping invisible padding must not trigger the cap')
 })

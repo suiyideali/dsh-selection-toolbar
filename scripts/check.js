@@ -35,4 +35,23 @@ if (!existsSync(path.join(root, pkg.exports['./client'].default))) {
 const patch = readFileSync(path.join(root, pkg.dsh.bundle.patch), 'utf8')
 if (!patch.includes(pkg.name)) fail(`cordis.patch.yml must reference "${pkg.name}"`)
 
+// 4) Runtime dependencies must be pinned to an exact version. A range (or a
+//    floating git/url ref) lets a fresh install resolve a different build than
+//    the one reviewed, and this package's host half is loaded inside the
+//    operator's dsh process with that process's full authority. Concretely:
+//    "^3.18.0" resolved to 3.18.1 in one checkout and 3.18.4 in another.
+const SPEC_RANGE_MARKERS = /[\^~*<>|]|\s-\s/
+const SPEC_FLOATING_PREFIX = /^(?:github:|git\+|git:|https?:|file:|link:)/
+for (const [name, spec] of Object.entries(pkg.dependencies ?? {})) {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    fail(`dependency ${name} must be a version string`)
+  }
+  if (SPEC_RANGE_MARKERS.test(spec) || spec === 'latest') {
+    fail(`dependency ${name} must be pinned to an exact version (got "${spec}")`)
+  }
+  if (SPEC_FLOATING_PREFIX.test(spec)) {
+    fail(`dependency ${name} must reference an immutable published version (got "${spec}")`)
+  }
+}
+
 console.log('repo health checks passed')
