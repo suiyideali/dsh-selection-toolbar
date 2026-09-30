@@ -58,7 +58,7 @@ function loadHost() {
  * "dormant" on builds without the service.
  */
 function makeCtx({ settings, includeSettings = true } = {}) {
-  const calls = { settingsCb: 0, register: [], routes: [] }
+  const calls = { settingsCb: 0, routes: [] }
   const ctx = {
     get: () => undefined,
     inject: (names, cb) => {
@@ -97,10 +97,16 @@ test('apply registers the /btw route', () => {
 
 test('a settings service without register degrades instead of throwing', () => {
   const { host, warnings } = loadHost()
-  const { ctx, calls } = makeCtx({ settings: { configure: () => {}, describe: () => {} } })
+  const otherCalls = []
+  const { ctx, calls } = makeCtx({
+    settings: {
+      configure: (...args) => otherCalls.push(['configure', ...args]),
+      describe: (...args) => otherCalls.push(['describe', ...args])
+    }
+  })
   assert.doesNotThrow(() => host.apply(ctx))
   assert.equal(calls.settingsCb, 1, 'the injectable must still be observed')
-  assert.equal(calls.register.length, 0)
+  assert.deepEqual(otherCalls, [], 'no other settings method may be guessed at')
   assert.equal(warnings.length, 1, 'the degradation must be reported once')
   assert.match(warnings[0], /settings\.register is unavailable/)
   assert.equal(calls.routes.length, 1, 'the sibling route registration must survive')
@@ -108,14 +114,19 @@ test('a settings service without register degrades instead of throwing', () => {
 
 test('an rc.8+ settings service is called with the namespace and live apply', () => {
   const { host, warnings } = loadHost()
-  const register = (...args) => { callsSeen.push(args) }
-  const callsSeen = []
-  const { ctx, calls } = makeCtx({ settings: { register } })
+  const registerCalls = []
+  const otherCalls = []
+  const settings = {
+    register: (...args) => registerCalls.push(args),
+    configure: (...args) => otherCalls.push(['configure', ...args])
+  }
+  const { ctx, calls } = makeCtx({ settings })
   host.apply(ctx)
-  assert.equal(callsSeen.length, 1)
-  assert.equal(callsSeen[0][0], 'dsh-selection-toolbar')
-  assert.deepEqual(callsSeen[0][2], { applies: 'live' })
-  assert.equal(calls.register.length, 0, 'the probe must not call a different method')
+  assert.equal(registerCalls.length, 1)
+  assert.equal(registerCalls[0][0], 'dsh-selection-toolbar')
+  assert.ok(registerCalls[0][1] && typeof registerCalls[0][1] === 'object', 'the schema must be passed')
+  assert.deepEqual(registerCalls[0][2], { applies: 'live' })
+  assert.deepEqual(otherCalls, [], 'the probe must call register and nothing else')
   assert.deepEqual(warnings, [])
   assert.equal(calls.routes.length, 1)
 })
