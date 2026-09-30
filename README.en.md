@@ -233,6 +233,18 @@ Then restart the app so the new client bundle is picked up.
   the markdown blockquote is the same shape as other quote-reply plugins.
 - **Selections are scoped** to the message list (`[data-chat-flow]`) and
   exclude the composer, inputs, and contenteditable regions.
+- **Client realm and trust model (verified, not assumed)**: dsh-client-modules
+  exposes a single `window.__ModuleLoader__` with a shared `pendingQueue`, serves
+  every plugin bundle through one **unfenced** `/plugins` prefix route, and applies
+  no iframe / shadow root / worker isolation — so all client plugins share one page
+  origin and one realm. Another installed plugin's code *can* therefore read this
+  plugin's localStorage (`dsh-selection-toolbar:btw:thread:<sessionId>` and the
+  settings key), but **installing a plugin already hands it that origin's full
+  authority** (its host half also runs with full authority inside the operator's dsh
+  process), so it is not a lower-trust reader and this is not a boundary crossing.
+  What remains is a retention choice rather than an exposure: the /btw history keeps
+  up to 50 entries per session with no TTL and no byte cap; sessionStorage or an
+  expiry would shrink the footprint (hardening, not a vulnerability).
 - **Popup lifetime**: Escape / outside-click dismissal and the 询问
   focus-while-typing guard are unchanged; for the /btw console the
   hide-on-scroll rule is explicitly relaxed — the console opens as a centered

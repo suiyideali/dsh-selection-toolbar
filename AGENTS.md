@@ -141,6 +141,24 @@ dsh releases (rc.8+ keyed `settings.plugin.item`, `@deepseek-ai/dsh-cordis-clien
 - Verify on a real web profile that the 设置 → 插件 card renders and `/btw`
   works — syntax alone is not enough.
 
+## Client realm and plugin trust (settled — do not re-litigate from assumption)
+
+dsh-client-modules exposes a **single** `window.__ModuleLoader__` with a shared
+`pendingQueue` (`lib/index.js:455-459`), serves every package's bundle through one
+**unfenced** `/plugins` prefix route (`:201`, `:547-548`), and applies no iframe,
+shadow root or worker isolation. All client plugins therefore share one page origin
+and one realm, so another installed plugin's code *can* read this plugin's
+localStorage — but installing a plugin already grants it that origin's full
+authority (and its host half runs with full authority in the operator's process),
+so it is **not a lower-trust reader**. Treat `dsh-selection-toolbar:settings` and
+`dsh-selection-toolbar:btw:thread:<sessionId>` as operator-owned storage, not as a
+boundary. If a future change wants another plugin to count as lower-trust, that
+needs host-side isolation (separate origins/realms), which does not exist today.
+
+Residual hardening, deliberately not applied: the /btw history is retained
+indefinitely (50 entries per session, no TTL, no byte cap). A TTL or
+`sessionStorage` would shrink the footprint if that ever matters.
+
 ## Suggested reading order
 
 `README.md` (usage/design) → `lib/index.js` header comment (host jobs + `/btw`

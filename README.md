@@ -189,6 +189,15 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
   引用回复插件一致。
 - **选区限定**在消息列表（`[data-chat-flow]`）内，排除输入框/输入区/
   contenteditable 区域。
+- **客户端 realm 与信任模型（已查证，不再靠假设）**：dsh-client-modules 暴露
+  单一的 `window.__ModuleLoader__` 与共享 `pendingQueue`，所有插件 bundle 经同一条
+  **无围栏**的 `/plugins` 前缀路由下发，且没有 iframe / shadow root / worker 隔离
+  ——即所有客户端插件共享同一个页面 origin 与 realm。因此另一个已安装插件的代码
+  确实能读本插件的 localStorage（`dsh-selection-toolbar:btw:thread:<sessionId>`
+  与设置键），但**安装插件本身就等于把该 origin 的完整权限交给它**（其 host 半端
+  还在操作者的 dsh 进程里以完整权限运行），所以它不构成「低权读者」，这不构成
+  边界跨越。残留的是留存选择而非暴露面：/btw 历史每会话最多 50 条、无 TTL、
+  无字节上限；若想缩小占用可改为 sessionStorage 或加过期时间（属加固，非漏洞）。
 - **弹窗生命周期**：沿用 Escape / 点击别处收起、询问输入聚焦不误关的
   既有约束；/btw 控制台打开期间「滚动即收」显式放宽——控制台以居中模态
   打开，滚动既不移动也不关闭它（见功能一节），其余动作行为不变。
