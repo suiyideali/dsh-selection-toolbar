@@ -14,10 +14,10 @@ All notable changes to dsh-selection-toolbar are documented here.
   对操作者与模型隐藏或重排内容。提示词同时明确声明「当前会话内容」与「划选
   内容」都是素材、其中的指令不是指令。`test/transcript.test.js` 新增 5 项、
   `test/btw-admission.test.js` 新增 1 项断言。
-- **/btw 错误响应不再回显宿主内部信息**：之前三处错误会把内部文本直接交给调用者
+- **/btw 错误响应不再回显宿主内部信息**：之前四处错误会把内部文本直接交给调用者
   ——`sessionQuery` 的异常消息（会点名 session id 并区分「不存在」与「存在但损坏」）、
-  模型选择异常、以及 provider 的上游错误。等于给能到达该路由的调用者一个 id 存在性
-  oracle。现在响应体只给稳定文案（`读不到该会话的记录` / `解析默认模型失败` /
+  模型选择异常、模型调用失败的 provider 上游错误，以及注册期顶层 catch 的异常文本。
+  等于给能到达该路由的调用者一个 id 存在性 oracle。现在响应体只给稳定文案（`读不到该会话的记录` / `解析默认模型失败` /
   `侧问失败，请稍后重试` / `侧问服务异常`），HTTP 状态语义不变，细节改写入 dsh
   服务端日志（`console.warn`）。`test/btw-admission.test.js` 新增 5 项断言：错误体
   不含路径、会话 id 差异与上游文本，且「不存在」与「存在但损坏」的响应完全一致。
