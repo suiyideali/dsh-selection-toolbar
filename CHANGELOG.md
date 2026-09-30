@@ -4,6 +4,8 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-30
+
 ### Changed
 
 - **「翻译」不再写死目标语言**：前缀从「请把下面这段内容翻译成中文：」改为
