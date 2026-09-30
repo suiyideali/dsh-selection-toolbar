@@ -18,7 +18,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | `lib/index.js` | Host: registers the settings namespace (rc.8+ keyed contract); serves the `/btw` route (`POST /plugins/dsh-selection-toolbar/btw`, one direct `llm.stream` call) | **Restart dsh web** |
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
 | `lib/transcript.js` | Session-log serialization (the `/btw` context slice) | Unit-tested |
-| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / prompt-frame) | — |
+| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / prompt-frame / host-apply) | — |
 | `scripts/check.js` | Repo health gate (syntax + manifest contract + pinned dependencies); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
 
@@ -121,6 +121,15 @@ dsh releases (rc.8+ keyed `settings.plugin.item`, `@deepseek-ai/dsh-cordis-clien
 
 - Check `package.json#dsh.client.inject` and how `lib/index.js` registers the
   settings namespace;
+- **Probe the service interface, never assume it.** The settings contract in
+  particular moved: 0.2.0-rc.2 serves configure/describe/update/replace/mutate/
+  write/schema and has **no `register`**, so an unguarded call throws inside the
+  inject callback. `ctx.inject(services, cb)` is a thin wrapper over
+  `ctx.plugin({ inject, apply: cb })` (cordis `lib/index.js:1600-1606`), so the
+  callback runs as its own fiber body and the throw stays in that fiber — but it
+  is still an error on every load. `apply()` therefore feature-detects and warns
+  once; `test/host-apply.test.js` pins all three shapes (no service, service
+  without `register`, rc.8+ service);
 - Verify on a real web profile that the 设置 → 插件 card renders and `/btw`
   works — syntax alone is not enough.
 
@@ -128,4 +137,4 @@ dsh releases (rc.8+ keyed `settings.plugin.item`, `@deepseek-ai/dsh-cordis-clien
 
 `README.md` (usage/design) → `lib/index.js` header comment (host jobs + `/btw`
 semantics + the admission fence) → `lib/client.js` header comment + the
-`btwRenderAnswer` renderer section → the five suites under `test/`.
+`btwRenderAnswer` renderer section → the six suites under `test/`.

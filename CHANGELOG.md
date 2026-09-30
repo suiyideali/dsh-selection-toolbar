@@ -42,6 +42,16 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Fixed
 
+- **设置注册改为探测后使用，不再在宿主没实现 `register` 时抛错**：运行中的
+  dsh 0.2.0-rc.2 的 `settings` 服务只提供 configure/describe/update/replace/
+  mutate/write/schema，而插件按 rc.8+ 的 keyed 契约调用 `settings.register(...)`，
+  于是每次加载都在 inject 回调里抛异常。`ctx.inject(services, cb)` 只是
+  `ctx.plugin({ inject, apply: cb })` 的封装（回调是它自己那条 fiber 的 body），
+  因此失败被限制在该 fiber 内、`/btw` 路由仍会注册——但仍是每次加载一个错误。
+  现在先探测 `typeof settings.register === 'function'`，不可用时记录一条告警
+  并退回旧的 list-slot 契约。新增 `test/host-apply.test.js`（5 项）覆盖「无
+  settings 服务」「有服务但无 register」「rc.8+ 服务」三种形态，并断言告警只打
+  一次、路由注册不受影响。
 - **Quoting a rendered table or code block keeps its structure**: a `<table>`'s
   cells are tab-separated in the text layer (no pipes at all) and a `<pre>` has
   no fence, so quoting the plain selection produced content that no longer

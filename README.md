@@ -134,7 +134,10 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
   了 `@deepseek-ai/dsh-client-runtime`；`web` profile 默认自带）。设置卡片
   通过按设置命名空间分发的 `settings.plugin.item` keyed 槽注册，插件的
   小型 host 半端会注册 `dsh-selection-toolbar` 命名空间，设置 → 插件 才会
-  派发这张卡片。
+  派发这张卡片。宿主接口是**探测后使用**而不是假定：`settings.register`
+  不存在时（例如 0.2.0-rc.2 只提供 configure/describe/update/replace/mutate/
+  write/schema）会记一条告警并退回旧的 list-slot 契约，不再在 inject 回调里
+  抛错。`test/host-apply.test.js` 覆盖这三种宿主形态。
 - /btw 侧问依赖 host 侧核心服务 `webServer` / `sessionQuery` /
   `agentDefaultModel` / `llm`（均为 dsh host 组合自带，无需额外安装）。
   服务缺失时路由不注册，侧问弹窗内会给出可读错误。

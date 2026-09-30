@@ -162,6 +162,11 @@ Then restart the app so the new client bundle is picked up.
   profile). The settings card registers through the namespace-keyed
   `settings.plugin.item` slot, and the small host half serves the
   `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the card.
+  The host interface is **probed, never assumed**: when `settings.register` is
+  absent (0.2.0-rc.2 only serves configure/describe/update/replace/mutate/write/
+  schema) the plugin logs one warning and falls back to the legacy list-slot
+  contract instead of throwing inside the inject callback.
+  `test/host-apply.test.js` covers all three host shapes.
 - The /btw side channel uses host-side core services `webServer` /
   `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
   composition, nothing extra to install). If a service is missing the route is
