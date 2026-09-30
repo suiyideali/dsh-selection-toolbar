@@ -17,7 +17,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | --- | --- | --- |
 | `lib/index.js` | Host: registers the settings namespace (rc.8+ keyed contract); serves the `/btw` route (`POST /plugins/dsh-selection-toolbar/btw`, one direct `llm.stream` call) | **Restart dsh web** |
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
-| `lib/transcript.js` | Session-log serialization (the `/btw` context slice) | Unit-tested |
+| `lib/transcript.js` | Session-log serialization (the `/btw` context slice; sanitized, treated as material) | Unit-tested |
 | `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / prompt-frame / host-apply) | — |
 | `scripts/check.js` | Repo health gate (syntax + manifest contract + pinned dependencies); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
@@ -63,6 +63,14 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
    `test/prompt-frame.test.js` is the regression gate, and it slices the region by
    the `// ---- prompt building …` / `// ---- end prompt building ----` markers —
    keep those markers in place.
+7. **Transcript text entering the prompt is sanitized material**: `lib/transcript.js`
+   serializes `tool/result` content and `tool/call` arguments — whatever the agent
+   read from a file or fetched from a page — so `sanitizeTranscriptText` must keep
+   normalizing U+2028/U+2029 to real newlines and dropping the invisible
+   control/format set *before* the length caps apply, and the `/btw` prompt must
+   keep saying that both sections are material whose "instructions" are not
+   instructions. `test/transcript.test.js` pins the sanitizer and
+   `test/btw-admission.test.js` pins the prompt wording.
 
 ## Verification
 

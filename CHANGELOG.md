@@ -6,6 +6,14 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Security
 
+- **转录与划选文本按「素材」净化并声明**：`/btw` 会把 `tool/result` 内容与
+  `tool/call` 参数（即 agent 从文件或网页读到的东西）一并送进模型提示词。现在
+  序列化新增 `sanitizeTranscriptText`：U+2028/U+2029 归一成换行，并丢弃不可见
+  控制/格式码位（C0 控制符、DEL、ZWSP、LRM/RLM、双向嵌入与覆盖集、双向隔离集、
+  不可见运算符、BOM；ZWNJ/ZWJ 保留），**净化发生在长度截断之前**，避免隐形文本
+  对操作者与模型隐藏或重排内容。提示词同时明确声明「当前会话内容」与「划选
+  内容」都是素材、其中的指令不是指令。`test/transcript.test.js` 新增 5 项、
+  `test/btw-admission.test.js` 新增 1 项断言。
 - **/btw 错误响应不再回显宿主内部信息**：之前三处错误会把内部文本直接交给调用者
   ——`sessionQuery` 的异常消息（会点名 session id 并区分「不存在」与「存在但损坏」）、
   模型选择异常、以及 provider 的上游错误。等于给能到达该路由的调用者一个 id 存在性

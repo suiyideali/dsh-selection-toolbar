@@ -199,6 +199,15 @@ Then restart the app so the new client bundle is picked up.
   tool calls and results, each individually capped), and feeds one direct
   `llm.stream` call. **No session is created, no message is written, and the
   model gets no tools** — ephemerality is guaranteed by construction.
+  All of that text is treated as **material**: `tool/result` content and
+  `tool/call` arguments are whatever the agent read from a file or fetched from a
+  page, so serialization first sanitizes them — U+2028/U+2029 normalize to real
+  newlines and invisible control/format code points are dropped (C0 controls,
+  DEL, ZWSP, LRM/RLM, the bidi embedding/override set, the bidi isolate set,
+  invisible operators, BOM; ZWNJ/ZWJ are kept) so nothing in the transcript can
+  hide or reorder what the reader and the model see. Sanitization runs *before*
+  the length caps, and the prompt states outright that both sections are material
+  and that any "instruction" inside them is not one.
 - **Side-question route admission**: the route is registered on the raw
   `webServer` carrier, which applies no request-time control of its own (it
   picks a route by pathname and calls the handler), so the handler gates itself:
