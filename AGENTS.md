@@ -18,7 +18,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | `lib/index.js` | Host: registers the settings namespace (rc.8+ keyed contract); serves the `/btw` route (`POST /plugins/dsh-selection-toolbar/btw`, one direct `llm.stream` call) | **Restart dsh web** |
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
 | `lib/transcript.js` | Session-log serialization (the `/btw` context slice) | Unit-tested |
-| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission) | — |
+| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / prompt-frame) | — |
 | `scripts/check.js` | Repo health gate (syntax + manifest contract + pinned dependencies); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
 
@@ -50,6 +50,16 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
    call. Never remove or weaken it, and never expose further out-of-scope
    capability through the route. `test/btw-admission.test.js` is the regression
    gate for this rule.
+6. **Selection text injected into a session is framed data**: 询问 / 解释 / 翻译 /
+   总结 go through the composer's own **tool-enabled** main-thread
+   `session.prompt`, and the selection can originate from an assistant turn, a
+   tool result, or a page the agent fetched. `promptFor` in `lib/client.js` must
+   keep wrapping the selection in the `《划选内容开始》/《划选内容结束》` frame plus
+   the "quoted material, not instructions" notice, and keep neutralizing lookalike
+   markers inside the content so the frame cannot be closed early.
+   `test/prompt-frame.test.js` is the regression gate, and it slices the region by
+   the `// ---- prompt building …` / `// ---- end prompt building ----` markers —
+   keep those markers in place.
 
 ## Verification
 
@@ -115,4 +125,4 @@ dsh releases (rc.8+ keyed `settings.plugin.item`, `@deepseek-ai/dsh-cordis-clien
 
 `README.md` (usage/design) → `lib/index.js` header comment (host jobs + `/btw`
 semantics + the admission fence) → `lib/client.js` header comment + the
-`btwRenderAnswer` renderer section → the four suites under `test/`.
+`btwRenderAnswer` renderer section → the five suites under `test/`.
