@@ -19,7 +19,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
 | `lib/transcript.js` | Session-log serialization (the `/btw` context slice) | Unit-tested |
 | `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission) | — |
-| `scripts/check.js` | Repo health gate (syntax + manifest contract); CI runs the same | — |
+| `scripts/check.js` | Repo health gate (syntax + manifest contract + pinned dependencies); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
 
 ## Hard rules (read before changing)
@@ -59,6 +59,13 @@ npm test        # full node:test suite
 ```
 
 Run both green after touching `lib/*.js` or `test/*` before committing.
+
+Runtime dependencies are pinned to **exact versions** and `pnpm-lock.yaml` is
+committed (`scripts/check.js` step 4 rejects `^` / `~` / `*` ranges and floating
+git or URL refs). The host half is loaded inside the operator's dsh process with
+that process's full authority, so a range can resolve a build nobody reviewed.
+Run `pnpm install` after changing a pinned version, and keep the tests
+dependency-free: CI installs nothing (`.github/workflows/ci.yml`).
 
 ## Testing gotchas
 

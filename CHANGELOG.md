@@ -6,6 +6,12 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Security
 
+- **运行时依赖固定为精确版本并提交 lockfile**：`@deepseek-ai/schemastery` 由
+  host 半端在操作者的 dsh 进程里加载，之前声明为 `^3.18.0`，导致同一份代码在
+  不同检出中解析出不同构建（实测本仓库 3.18.1、桌面 profile 3.18.4）。现在
+  固定为 `3.18.4` 并提交 `pnpm-lock.yaml`；健康门禁新增第 4 项校验，拒绝
+  `^` / `~` / `*` 等范围写法与浮动的 git、URL 引用。测试仍保持零依赖、CI 不
+  安装依赖。
 - **`/btw` 路由现在自己校验请求来源**：该路由注册在裸 `webServer` 载体上，
   而载体不做任何请求期校验，部署自己的浏览器信任围栏（Host / Origin /
   `Sec-Fetch-Site`）与浏览器会话认证只存在于 `/api` 通道内部，因此恶意页面

@@ -164,8 +164,17 @@ Then restart the app so the new client bundle is picked up.
   `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the card.
 - The /btw side channel uses host-side core services `webServer` /
   `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
-  composition, no new npm dependencies). If a service is missing the route is
+  composition, nothing extra to install). If a service is missing the route is
   not registered and the popup shows a readable error.
+- The only npm runtime dependency is `@deepseek-ai/schemastery` (the host half
+  uses it to register the settings namespace schema). It is **pinned to an exact
+  version** and a `pnpm-lock.yaml` is committed: a range would let a fresh
+  install resolve a build nobody reviewed, while the host half is loaded inside
+  the operator's dsh process with that process's full authority (`^3.18.0`
+  measurably resolved to 3.18.1 in one checkout and 3.18.4 in another). The
+  health gate `node scripts/check.js` rejects `^` / `~` / `*` ranges and floating
+  git or URL refs; the tests themselves stay dependency-free and CI installs
+  nothing.
 
 ## Architecture notes
 

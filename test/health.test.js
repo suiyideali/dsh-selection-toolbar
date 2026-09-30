@@ -72,3 +72,47 @@ test('health gate fails when the patch does not reference the package name', () 
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+// Runtime dependencies must be pinned: the host half is loaded by the operator's
+// dsh process, so a range can resolve a build nobody reviewed.
+test('health gate fails when a runtime dependency uses a range', () => {
+  const dir = brokenRepo({
+    name: 'broken',
+    dependencies: { '@deepseek-ai/schemastery': '^3.18.0' },
+    dsh: { bundle: { patch: './cordis.patch.yml' }, client: { platform: 'web' } },
+    exports: { './client': { default: './lib/client.js' } }
+  })
+  try {
+    assert.throws(() => run(dir), /must be pinned to an exact version/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('health gate fails when a runtime dependency floats on a git ref', () => {
+  const dir = brokenRepo({
+    name: 'broken',
+    dependencies: { 'some-plugin': 'github:someone/some-plugin' },
+    dsh: { bundle: { patch: './cordis.patch.yml' }, client: { platform: 'web' } },
+    exports: { './client': { default: './lib/client.js' } }
+  })
+  try {
+    assert.throws(() => run(dir), /must reference an immutable published version/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('health gate accepts an exactly pinned runtime dependency', () => {
+  const dir = brokenRepo({
+    name: 'broken',
+    dependencies: { '@deepseek-ai/schemastery': '3.18.4' },
+    dsh: { bundle: { patch: './cordis.patch.yml' }, client: { platform: 'web' } },
+    exports: { './client': { default: './lib/client.js' } }
+  })
+  try {
+    assert.match(run(dir), /repo health checks passed/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
