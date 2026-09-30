@@ -138,9 +138,14 @@ dsh plugin --profile web add github:suiyideali/dsh-selection-toolbar
 or from a local checkout:
 
 ```bash
-cd dsh-selection-toolbar && pnpm install   # or: npm install
+cd dsh-selection-toolbar && pnpm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
+
+This plugin is distributed **via git only** — it is not published to the npm
+registry (`package.json#private`), so the two addresses above are the only install
+sources; `pnpm install` exists just to fetch the host half's single runtime
+dependency.
 
 The desktop app's `desktop` profile is managed exclusively by the Electron
 application — the CLI refuses it (`profile "desktop" is managed exclusively by
@@ -171,7 +176,7 @@ Then restart the app so the new client bundle is picked up.
   `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
   composition, nothing extra to install). If a service is missing the route is
   not registered and the popup shows a readable error.
-- The only npm runtime dependency is `@deepseek-ai/schemastery` (the host half
+- The only runtime dependency is `@deepseek-ai/schemastery` (the host half
   uses it to register the settings namespace schema). It is **pinned to an exact
   version** and a `pnpm-lock.yaml` is committed: a range would let a fresh
   install resolve a build nobody reviewed, while the host half is loaded inside

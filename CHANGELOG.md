@@ -4,6 +4,17 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- **不再走 npm 发布路径**：安装方式一直是 `dsh plugin add github:suiyideali/dsh-selection-toolbar`
+  （git 分发），因此移除 `package.json` 里只为 `npm publish` 服务的发布白名单
+  `files`，并加 `"private": true` 表明不发布到注册表。**注意这只是约定、不是硬闸**：
+  实测 npm 11.17.0 / node 26.5.0 下，`private: true` 的包执行 `npm publish --dry-run`
+  仍 exit 0 并打印 dry-run 发布提示（`lib/commands/publish.js` 里的 `EPRIVATE` 判断
+  条件为 `workspace && manifest.private`，此路径未触发），pnpm 的 bundle 里也没有
+  相应的 private 守卫；真正的保护是这台机器上不存在发布凭据。安装路径不受影响：
+  已实测 pnpm 安装带 `private: true` 的 git 依赖与 tarball 均成功。
+
 ## [1.2.0] - 2026-09-30
 
 ### Changed
