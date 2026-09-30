@@ -6,6 +6,13 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ### Security
 
+- **/btw 错误响应不再回显宿主内部信息**：之前三处错误会把内部文本直接交给调用者
+  ——`sessionQuery` 的异常消息（会点名 session id 并区分「不存在」与「存在但损坏」）、
+  模型选择异常、以及 provider 的上游错误。等于给能到达该路由的调用者一个 id 存在性
+  oracle。现在响应体只给稳定文案（`读不到该会话的记录` / `解析默认模型失败` /
+  `侧问失败，请稍后重试` / `侧问服务异常`），HTTP 状态语义不变，细节改写入 dsh
+  服务端日志（`console.warn`）。`test/btw-admission.test.js` 新增 5 项断言：错误体
+  不含路径、会话 id 差异与上游文本，且「不存在」与「存在但损坏」的响应完全一致。
 - **划选内容按「素材」注入，不再以裸文本进入带工具的主会话**：询问 / 解释 / 翻译 /
   总结 走的是与 composer 同一条**带工具**的 `session.prompt` 通路，而被划选的
   文本可能来自助手回复、工具结果或 agent 抓取的页面——不是操作者写的。之前这些

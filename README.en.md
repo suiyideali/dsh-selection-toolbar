@@ -208,6 +208,11 @@ Then restart the app so the new client bundle is picked up.
   still aborts the in-flight model call. Answers come
   from the current default model (`agentDefaultModel`) and count toward
   normal token usage.
+- **Error responses carry a stable sentence and nothing else**: host exception
+  text, the "missing versus exists-but-corrupt" difference for a session id, and
+  provider upstream errors never reach the response body — that would hand any
+  caller that reaches the route an id-existence oracle. The detail is written to
+  the dsh server log (`console.warn`) for the operator instead.
 - **Quote insert** uses the official `inputActions.setDraft` standard prop from
   the `conversation.input.dock` slot. It deliberately avoids `sessions.scope()`
   + event bails, which the dynamic-plugin facade forbids (cross-context guard);

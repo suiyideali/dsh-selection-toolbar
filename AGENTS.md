@@ -48,8 +48,11 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
    loopback Host/Origin/Sec-Fetch-Site fence when that service is missing or its
    call fails — plus a JSON `Content-Type`, before any session read or model
    call. Never remove or weaken it, and never expose further out-of-scope
-   capability through the route. `test/btw-admission.test.js` is the regression
-   gate for this rule.
+   capability through the route. Responses must also stay free of host internals
+   (session-existence differences, host exception text, provider errors): return
+   the stable sentences (`ERR_*` constants) and put the detail in
+   `logBtwFailure`. `test/btw-admission.test.js` is the regression gate for this
+   rule.
 6. **Selection text injected into a session is framed data**: 询问 / 解释 / 翻译 /
    总结 go through the composer's own **tool-enabled** main-thread
    `session.prompt`, and the selection can originate from an assistant turn, a

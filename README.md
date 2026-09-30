@@ -170,6 +170,10 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
   127.0.0.1）或跨站页面就能把「读一份会话 + 一次计费模型调用」当作免费资源
   使用。浏览器侧断开（关闭弹窗）仍会中止进行中的模型调用。
   答案由当前默认模型（`agentDefaultModel`）生成，计入正常 token 消耗。
+- **错误响应对调用者只有稳定文案**：宿主异常文本、会话 id 的「不存在 vs 存在但
+  损坏」差异、provider 的上游错误都不会出现在响应体里——那等于给能到达该路由的
+  调用者一个 id 存在性 oracle。细节改为写入 dsh 服务端日志（`console.warn`），
+  由操作者查阅。
 - **引用插入**走 `conversation.input.dock` 槽位官方标准 prop
   `inputActions.setDraft`，刻意避开 `sessions.scope()` + 事件 bail（动态
   插件 facade 的跨 Context 守卫禁止那条路）；markdown 引用块与其它
