@@ -113,9 +113,12 @@ dsh plugin --profile web add github:suiyideali/dsh-selection-toolbar
 或本地 checkout：
 
 ```bash
-cd dsh-selection-toolbar && pnpm install   # 或：npm install
+cd dsh-selection-toolbar && pnpm install
 dsh plugin --profile web add /path/to/dsh-selection-toolbar
 ```
+
+本插件**只经 git 分发**，不发布到 npm 注册表（`package.json#private`），所以上面
+两条地址就是唯一的安装来源；`pnpm install` 只是为了装上宿主半端唯一的运行时依赖。
 
 桌面端的 `desktop` profile 由 Electron 应用独占管理，命令行添加会被拒绝
 （`profile "desktop" is managed exclusively by the Electron application`）。
@@ -141,7 +144,7 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
 - /btw 侧问依赖 host 侧核心服务 `webServer` / `sessionQuery` /
   `agentDefaultModel` / `llm`（均为 dsh host 组合自带，无需额外安装）。
   服务缺失时路由不注册，侧问弹窗内会给出可读错误。
-- 唯一的 npm 运行时依赖是 `@deepseek-ai/schemastery`（host 半端用它注册设置
+- 唯一的运行时依赖是 `@deepseek-ai/schemastery`（host 半端用它注册设置
   命名空间的 schema），**固定精确版本**并随仓库提交 `pnpm-lock.yaml`：范围写法
   会让全新安装解析到未审阅的构建，而 host 半端是在操作者的 dsh 进程里、以该
   进程的完整权限加载的（实测 `^3.18.0` 在不同检出中解析成 3.18.1 与 3.18.4）。

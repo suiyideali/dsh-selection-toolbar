@@ -81,8 +81,8 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 ## Verification
 
 ```sh
-npm run check   # health gate: syntax + manifest contract
-npm test        # full node:test suite
+pnpm run check   # health gate: syntax + manifest contract
+pnpm test        # full node:test suite
 ```
 
 Run both green after touching `lib/*.js` or `test/*` before committing.
@@ -112,11 +112,21 @@ dependency-free: CI installs nothing (`.github/workflows/ci.yml`).
   **regular merge commits** (not squash).
 - Behavior changes update `CHANGELOG.md` under `[Unreleased]` (Chinese,
   user-visible wording).
-- Before a PR: `npm run check && npm test` green; merge only after CI (same
+- Before a PR: `pnpm run check && pnpm test` green; merge only after CI (same
   commands) passes.
 - Releasing: bump `package.json` version, archive the changelog, commit
-  `chore(release): vX.Y.Z`. **npm publish is the user's call** — never publish
-  on their behalf.
+  `chore(release): vX.Y.Z`, tag `vX.Y.Z` (lightweight, like `v1.1.0` / `v1.2.0`),
+  push both, then create the GitHub Release with a `## 亮点` section plus
+  `--generate-notes`.
+- **Distribution is git only** — `dsh plugin add github:suiyideali/dsh-selection-toolbar`.
+  Never publish this package to a registry; `package.json#private` states that
+  intent and the publish whitelist (`files`) has been removed. Do not lean on
+  `private` as a mechanical block, though: on npm 11.17.0 / node 26.5.0
+  `npm publish --dry-run` on a package with `private: true` exits 0 and prints the
+  dry-run publish notice — the `EPRIVATE` guard in `lib/commands/publish.js`
+  (`workspace && manifest.private`) never fired — and pnpm's bundle carries no
+  private-package guard string either. The real protection is not having publish
+  credentials on this machine.
 - Cleanup: no leftovers in the repo (`.tmp-*`, screenshots, debug artifacts).
 
 ## The effect chain (so nobody tests an empty change)
