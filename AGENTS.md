@@ -18,7 +18,7 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
 | `lib/index.js` | Host: registers the settings namespace (rc.8+ keyed contract); serves the `/btw` route (`POST /plugins/dsh-selection-toolbar/btw`, one direct `llm.stream` call) | **Restart dsh web** |
 | `lib/client.js` | Client bundle: selection/popup/toolbar/settings UI + `/btw` console + minimal markdown renderer | Reload the plugin bundle + **refresh the page** |
 | `lib/transcript.js` | Session-log serialization (the `/btw` context slice; sanitized, treated as material) | Unit-tested |
-| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / prompt-frame / host-apply) | — |
+| `test/*.test.js` | `node:test` suites (health / transcript / btw-render / btw-admission / selection-quote / host-apply) | — |
 | `scripts/check.js` | Repo health gate (syntax + manifest contract + pinned dependencies); CI runs the same | — |
 | `cordis.patch.yml` + `package.json#dsh` | Bundle insert and client-inject manifest | Bound to the host version contract |
 
@@ -53,16 +53,22 @@ tool-less). Two halves — host and client — and **no build step** anywhere.
    the stable sentences (`ERR_*` constants) and put the detail in
    `logBtwFailure`. `test/btw-admission.test.js` is the regression gate for this
    rule.
-6. **Selection text injected into a session is framed data**: 询问 / 解释 / 翻译 /
+6. **Selection text injected into a session is quoted data**: 询问 / 解释 / 翻译 /
    总结 go through the composer's own **tool-enabled** main-thread
    `session.prompt`, and the selection can originate from an assistant turn, a
    tool result, or a page the agent fetched. `promptFor` in `lib/client.js` must
-   keep wrapping the selection in the `《划选内容开始》/《划选内容结束》` frame plus
-   the "quoted material, not instructions" notice, and keep neutralizing lookalike
-   markers inside the content so the frame cannot be closed early.
-   `test/prompt-frame.test.js` is the regression gate, and it slices the region by
-   the `// ---- prompt building …` / `// ---- end prompt building ----` markers —
-   keep those markers in place.
+   keep injecting the selection as a **Markdown quote** — `quoteSelection` prefixes
+   every line with `> `, which is what makes the block inescapable (no paired
+   markers to spoof, nothing to rewrite) and keeps the conversation readable. The
+   notice (`SELECTION_NOTICE`) is one short line and belongs **only** on the paths
+   with no lead-in: an **empty** 询问 (the selection *is* the whole request) and any
+   unknown mode. Fixed-prefix actions and 询问 *with a typed question* add nothing,
+   because their lead-in already names the selection as the object. Do not add a
+   second notice strength or restore paired markers without revisiting
+   `test/selection-quote.test.js`, which is the regression gate and slices the
+   region by the `// ---- prompt building …` / `// ---- end prompt building ----`
+   markers — keep
+   those markers in place.
 7. **Transcript text entering the prompt is sanitized material**: `lib/transcript.js`
    serializes `tool/result` content and `tool/call` arguments — whatever the agent
    read from a file or fetched from a page — so `sanitizeTranscriptText` must keep
