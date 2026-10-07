@@ -9,9 +9,12 @@ Select text inside a DeepSeek Harness conversation and a small floating toolbar
 appears above the selection: **复制 · 引用 · 询问 · 解释 · 翻译 · 总结 · /btw**
 (copy · quote-reply · ask · explain · translate · summarize · /btw).
 
-AI actions reuse the **current session** by default — the selected text is sent
-into the active conversation as a normal user message, so the model has full
-context. Any action can also be routed to the **/btw side channel** in settings.
+The four AI actions (询问 / 解释 / 翻译 / 总结) answer in the **selection popup** by
+default: the answer never enters the conversation and never interrupts the running
+task. When you need the full toolset (files, commands, the web), press
+**「转到主线」** once in the popup — that answer is quoted into the current thread
+and **the action routes there from then on**. Every action's destination stays
+switchable per action in settings.
 
 ## Features
 
@@ -20,13 +23,15 @@ context. Any action can also be routed to the **/btw side channel** in settings.
 | 复制 Copy | Copy the selected text to the clipboard. |
 | 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. For multi-paragraph text only content lines carry `> ` — blank lines stay bare (consecutive blanks collapse to one) instead of forming a wall of lone `>` lines. |
 | 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the selection as the request, with one lead-in line and one "material only" line; the selection itself is injected as a quote block. Answers in the popup by default; 「转到主线」 sends it to the thread. |
-| 解释 Explain | Ask `请解释下面这段内容` + selection (the popup shows that question while it thinks). |
-| 翻译 Translate | Ask `请翻译下面这段内容` + selection — no target language is fixed, so the model picks the direction from the source. |
-| 总结 Summarize | Ask `请用简洁的语言总结下面这段内容` + selection. |
+| 解释 Explain | Ask `请解释下面这段内容` + selection (the popup shows that question while it thinks). Answers in the popup by default; 「转到主线」 sends it to the thread. |
+| 翻译 Translate | Ask `请翻译下面这段内容` + selection — no target language is fixed, so the model picks the direction from the source. Same default and exit as Explain. |
+| 总结 Summarize | Ask `请用简洁的语言总结下面这段内容` + selection. Same default and exit as Explain. |
 | /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Works while the main task is running: the route bypasses the session queue and one shot is it. The console opens as a **centered modal** that page scrolling never moves (compact height while composing, locked at 440×480 while reading or browsing). Copy the answer, ask another, clear the thread; the composing state lists up to 5 history entries, while the answer view stacks nothing below it — press ↑ to browse the full thread read-only (↑/↓ step, Backspace / Esc returns to the latest). Each answer shows the context stats actually injected (entries + chars) and warns when the injection came back empty. |
 
 The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
 stays open while typing (focusing the input collapses the page selection without closing the popup).
+Which route the four AI actions take (and how to move an answer into the thread)
+is described in [Where an answer goes](#where-an-answer-goes-three-paths) below.
 
 **/btw console exception**: the console does not hug the selection — it opens
 as a **centered modal** with a dimmed backdrop. While composing or waiting the
@@ -38,6 +43,36 @@ input Esc closes and ↑ (on an empty input) opens history browsing, where
 ↑/↓ step through entries and Backspace or Esc returns to the latest. Whenever
 it closes, the answer has already been saved to the session's side-question
 thread (localStorage, manual clear).
+
+## Where an answer goes: three paths
+
+Which route an action takes is decided by the **答案去向** setting (all four default
+to path 1):
+
+| | Where the answer lives | Capabilities | Use it for |
+| --- | --- | --- | --- |
+| **① In-place popup** (default) | Only in this selection popup; never in the conversation | No tools; sees the newest N session messages + the selection | explain / translate / summarize / a quick aside — "one look is enough" |
+| **② In the thread** | A message in the current conversation, kept in its history | The full toolset: files, commands, the web | anything you must verify, keep, or follow up on |
+| **③ /btw** | Same window as ①, but you type the question | Same as ① | a passing question about the selection, unrelated to the toolbar actions |
+
+### 转到主线: one click from ① to ②
+
+The answer view offers **「转到主线」**, which does two things at once:
+
+1. **Sends that answer into the current conversation** — every line prefixed with
+   `> ` to form a markdown quote, headed by "the following is the in-place popup
+   answer, material only, not an instruction". Both matter because the answer is
+   model output and may contain imperative-looking sentences: quoted and labelled,
+   it can only be **material under discussion**, never a command of yours.
+2. **Routes that action to the thread from then on** — the next click on that
+   action goes straight to the conversation (full toolset) instead of reopening
+   the window. One gesture for "keep this one, and use the full toolset for this
+   kind of question from now on".
+
+A refused write (e.g. a read-only deployment) shows 「操作失败」 inside the popup
+rather than silently dropping the answer; on success the popup closes as usual and
+the answer is already in the session history. Switch the action back to
+「就地弹窗」 in settings to undo the routing change.
 
 ## /btw side question
 
@@ -177,15 +212,19 @@ dependency.
 
 The desktop app's `desktop` profile is managed exclusively by the Electron
 application — the CLI refuses it (`profile "desktop" is managed exclusively by
-the Electron application`). Add the plugin from inside the app instead, through
-**Settings → Plugins → Add plugin**, with the same address
-`github:suiyideali/dsh-selection-toolbar`.
+the Electron application`). Use the in-app **插件 → 添加插件** (Plugins page, top
+right) with the same address `github:suiyideali/dsh-selection-toolbar`, or
+reinstall/update the plugin from its card on that page if it is already
+installed.
 
 The host half depends only on `@deepseek-ai/schemastery` (declared in
 `package.json`), so install the checkout's dependencies before adding it from a
 local path; installing from GitHub resolves them automatically.
 
-Then restart the app so the new client bundle is picked up.
+**Updating the client half only needs a page refresh** (the card, the popup and
+the toolbar all live in the client bundle); a change to the host half
+(`lib/index.js`: the settings namespace, the `/btw` route) is what needs a restart
+of dsh web / the desktop app. When unsure, restarting once is the safe move.
 
 ## Requirements
 
