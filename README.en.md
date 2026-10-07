@@ -111,8 +111,11 @@ guessing why an answer seems context-blind.
 
 ## Settings
 
-The plugin appears in **设置 → 插件 → 插件列表** as a native-style card — the
-same collapsible look as the built-in 终端 / 网页搜索 entries — with:
+The card lives under **插件 (Plugins) → dsh-selection-toolbar → 划词工具栏** —
+open the plugin's card in the sidebar's Plugins page and the card is in that
+page's configuration area. Same collapsible look as the built-in 终端 / 网页搜索
+entries (dsh's own copy: "install, enable and configure plugins"; the built-in
+plugin *inventory* is a separate 设置 → 内置插件 page), with:
 
 - 弹窗出现延时 — delay before the toolbar appears after selecting (0–500 ms)
 - 功能开关 — toggle each toolbar entry individually (复制 · 引用 · 询问 ·
@@ -124,8 +127,30 @@ same collapsible look as the built-in 终端 / 网页搜索 entries — with:
   carries as context (5–50, default 20)
 - 恢复默认 — reset all options
 
-Options persist in the browser (localStorage) and apply to the popup live,
-no reload needed.
+Options persist in the browser (localStorage) and apply to the popup live, no
+reload needed. On a host that serves this settings namespace (see Requirements),
+localStorage is a **mirror of the config file**: the card reads the plugin
+entry's config and writes every edit back to it, so the same options can be set
+by hand instead — open this plugin's page once (the card mounts and takes over)
+and the edit is in force:
+
+```yaml
+# <profile>/cordis.patch.yml
+- id: dsh-selection-toolbar
+  name: dsh-selection-toolbar
+  config:
+    delay: 100                 # popup delay in ms (0–500)
+    hiddenActions: [copy]      # copy/quote/ask/explain/translate/summarize/btw
+    btwContextMessages: 20     # side-question context messages (5–50)
+    destinations: '{"ask":"btw","explain":"main"}'   # action -> main | btw
+```
+
+`destinations` is a JSON string rather than a map because schemastery has no
+record type (see `lib/index.js#Config`); leaving it unset means "no decision
+here", and the browser-side value stays in force. The other three follow the
+config whenever the namespace is served (they have schema defaults, so the
+config always carries a value); the browser copy is only a mirror, which is what
+keeps the card, the popup and the file from disagreeing.
 
 ## Install
 
@@ -164,20 +189,34 @@ Then restart the app so the new client bundle is picked up.
 - dsh web (adapts to the host contract from 0.1.2 onwards)
 - The profile must already mount `@deepseek-ai/dsh-cordis-client-runner`
   (`@deepseek-ai/dsh-client-runtime` before 0.1.2; standard in the `web`
-  profile). The settings card registers through the namespace-keyed
-  `settings.plugin.item` slot, and the small host half serves the
-  `dsh-selection-toolbar` settings namespace so 设置 → 插件 dispatches the card.
-  The host interface is **probed, never assumed**: when `settings.register` is
-  absent (0.2.0-rc.2 only serves configure/describe/update/replace/mutate/write/
-  schema) the plugin logs one warning and falls back to the legacy list-slot
-  contract instead of throwing inside the inject callback.
-  `test/host-apply.test.js` covers all three host shapes.
+  profile). The settings card needs both halves in place: the host half exports
+  `Config`, which is what makes the plugin entry a configurable settings
+  namespace (on the form-driven line `SettingsForms.describe()` keeps only
+  entries whose `Config` yields a volatile form), and the client half registers
+  the card into the slot the running deployment actually dispatches — the
+  plugin manager dispatches `plugins.bundle.config` (key: the package name) and
+  `plugins.row.config` (key `<package>#<patch row id>`: here
+  `dsh-selection-toolbar#dsh-selection-toolbar`) for an installed bundle, older
+  builds dispatch the namespace-keyed `settings.plugin.item`. All are
+  registered; an undeclared one never fires (`slots.inject` waits for a
+  declaration, it does not test for one). The card prefers a form the page hands
+  over and otherwise resolves the namespace controller itself from
+  `ctx.configForms` (only the row/item pages hand one over; the bundle page hands
+  none). The host interface is **probed, never assumed**: `settings.register`
+  being absent while the service answers `describe` (the running 0.2.0-rc.2
+  build) is that line's normal contract — no warning — and the exported `Config`
+  serves the namespace. `test/host-apply.test.js` covers all four host shapes and
+  `test/settings-card.test.js` pins the `Config` volatile/default fields, the
+  three slot registrations (including "an undeclared slot registers nothing"),
+  the key/package-name/patch-id coupling, the host JSON round-trip, the dropping
+  of malformed values, and the config-to-popup mirror write.
 - The /btw side channel uses host-side core services `webServer` /
   `sessionQuery` / `agentDefaultModel` / `llm` (all built into the dsh host
   composition, nothing extra to install). If a service is missing the route is
   not registered and the popup shows a readable error.
 - The only runtime dependency is `@deepseek-ai/schemastery` (the host half
-  uses it to register the settings namespace schema). It is **pinned to an exact
+  uses it to declare the settings namespace and the entry `Config` schema). It
+  is **pinned to an exact
   version** and a `pnpm-lock.yaml` is committed: a range would let a fresh
   install resolve a build nobody reviewed, while the host half is loaded inside
   the operator's dsh process with that process's full authority (`^3.18.0`
@@ -191,9 +230,11 @@ Then restart the app so the new client bundle is picked up.
 - **Client-only behavior, tiny host half**: AI actions prompt the session
   through the client `sessions` service — `binding(id).session.prompt(...)` —
   the exact path the composer itself uses, so queueing and error surfaces are
-  native. The only host code registers the settings namespace (see
-  Requirements) so the settings card is served on rc.8+; the card's option
-  values stay in browser localStorage (client-only design).
+  native. The host code serves the settings namespace and its entry `Config`
+  (see Requirements) so both generations of settings surface can dispatch the
+  card; the values the card reads stay in browser localStorage (read
+  synchronously by the popup, applied live), and are mirrored into the profile
+  config through the settings form when the host hands one over.
 - **/btw side-question channel**: the static bundle has no package-private
   host RPC (its factory only receives `require`), so the host half registers
   an exact web route `POST /plugins/dsh-selection-toolbar/btw` via the

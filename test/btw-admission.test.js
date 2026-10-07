@@ -38,11 +38,24 @@ const hostBody = hostSource.replace(/^import .*$/gm, '').replace(/^export /gm, '
 assert.doesNotMatch(hostBody, /^import /m, 'every import line must be stripped for the CI-safe evaluation')
 assert.doesNotMatch(hostBody, /^export /m, 'every export keyword must be stripped for the CI-safe evaluation')
 
-// Only the settings schema touches `z`; it is never registered in this suite.
+// Only the settings schemas touch `z`; neither is registered in this suite. The
+// builder chain is stubbed because the exported `Config` (the form-driven
+// host's discovery contract, see test/settings-card.test.js) uses it.
+function zChain() {
+  const builder = {
+    min: () => builder,
+    max: () => builder,
+    step: () => builder,
+    default: () => builder,
+    volatile: () => builder
+  }
+  return builder
+}
+
 const zStub = {
-  number: () => ({ default: () => ({}) }),
-  string: () => ({}),
-  array: () => ({ default: () => ({}) }),
+  number: zChain,
+  string: zChain,
+  array: zChain,
   object: () => ({})
 }
 

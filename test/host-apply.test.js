@@ -26,11 +26,25 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const hostSource = readFileSync(path.join(root, 'lib', 'index.js'), 'utf8')
 const hostBody = hostSource.replace(/^import .*$/gm, '').replace(/^export /gm, '')
 
-// Only the settings schema touches `z`.
+// Only the settings schema touches `z`. The shipped host source also exports
+// `Config` (the form-driven host's discovery contract, see
+// test/settings-card.test.js), so the stub must support the builder chain that
+// schema uses — `.min()/.max()/.step()/.default()/.volatile()`.
+function zChain() {
+  const builder = {
+    min: () => builder,
+    max: () => builder,
+    step: () => builder,
+    default: () => builder,
+    volatile: () => builder
+  }
+  return builder
+}
+
 const zStub = {
-  number: () => ({ default: () => ({}) }),
-  string: () => ({}),
-  array: () => ({ default: () => ({}) }),
+  number: zChain,
+  string: zChain,
+  array: zChain,
   object: () => ({ __schema: true })
 }
 
@@ -95,7 +109,10 @@ test('apply registers the /btw route', () => {
   assert.equal(typeof calls.routes[0].handler, 'function')
 })
 
-test('a settings service without register degrades instead of throwing', () => {
+test('a form-driven settings service (no register, but describe) is used silently', () => {
+  // The 0.2.0-rc.2 line: `register` does not exist there, which is its contract
+  // — the exported `Config` serves the namespace — so a healthy deployment must
+  // not be reported as a degradation on every start.
   const { host, warnings } = loadHost()
   const otherCalls = []
   const { ctx, calls } = makeCtx({
@@ -107,9 +124,17 @@ test('a settings service without register degrades instead of throwing', () => {
   assert.doesNotThrow(() => host.apply(ctx))
   assert.equal(calls.settingsCb, 1, 'the injectable must still be observed')
   assert.deepEqual(otherCalls, [], 'no other settings method may be guessed at')
-  assert.equal(warnings.length, 1, 'the degradation must be reported once')
-  assert.match(warnings[0], /settings\.register is unavailable/)
+  assert.deepEqual(warnings, [], 'the form-driven contract is not a degradation')
   assert.equal(calls.routes.length, 1, 'the sibling route registration must survive')
+})
+
+test('an unrecognizable settings service warns once instead of passing silently', () => {
+  const { host, warnings } = loadHost()
+  const { ctx, calls } = makeCtx({ settings: { configure: () => {} } })
+  assert.doesNotThrow(() => host.apply(ctx))
+  assert.equal(warnings.length, 1)
+  assert.match(warnings[0], /neither register nor describe/)
+  assert.equal(calls.routes.length, 1)
 })
 
 test('an rc.8+ settings service is called with the namespace and live apply', () => {
@@ -140,7 +165,7 @@ test('a deployment without the settings service stays dormant and silent', () =>
   assert.equal(calls.routes.length, 1)
 })
 
-test('the degradation warning is emitted once per process, not once per apply', () => {
+test('the unrecognizable-service warning is emitted once per process, not once per apply', () => {
   const { host, warnings } = loadHost()
   const broken = { settings: { configure: () => {} } }
   host.apply(makeCtx(broken).ctx)

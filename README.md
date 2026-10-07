@@ -89,8 +89,10 @@ Escape 关闭；输入框内 Esc 关闭、↑（空输入时）进入历史翻�
 
 ## 设置
 
-插件会出现在 **设置 → 插件 → 插件列表**，是与内置 终端 / 网页搜索 同款的
-原生风格折叠卡片，包含：
+卡片在 **插件 → dsh-selection-toolbar → 划词工具栏**（左侧栏的「插件」页：
+先点列表里本插件的卡片进它的页面，卡片出现在该页的配置区；dsh 自己的文案是
+「安装、启用和配置插件」，内置插件清单另在「设置 → 内置插件」），是与内置
+终端 / 网页搜索 同款的原生风格折叠卡片，包含：
 
 - 弹窗出现延时——选中后延迟多久弹出（0–500 ms）
 - 功能开关——可逐个开关工具栏按钮（复制 · 引用 · 询问 · 解释 · 翻译 ·
@@ -100,7 +102,26 @@ Escape 关闭；输入框内 Esc 关闭、↑（空输入时）进入历史翻�
 - 侧问上下文条数——顺便问携带的最近消息条数（5–50，默认 20）
 - 恢复默认——重置所有选项
 
-选项保存在浏览器（localStorage），对弹窗即时生效，无需刷新。
+选项存在浏览器（localStorage），对弹窗即时生效，无需刷新；在会服务该设置命名空间
+的宿主上（见「依赖」）它同时是**配置文件的镜像**：卡片从该插件条目的配置读值、
+每次改动写回配置，因此也可以直接改配置文件、不必进界面——改完打开一次本插件页
+（卡片会挂载并接管）即生效：
+
+```yaml
+# <profile>/cordis.patch.yml
+- id: dsh-selection-toolbar
+  name: dsh-selection-toolbar
+  config:
+    delay: 100                 # 弹窗延时 ms（0–500）
+    hiddenActions: [copy]      # 隐藏的按钮：copy/quote/ask/explain/translate/summarize/btw
+    btwContextMessages: 20     # 侧问携带的最近消息条数（5–50）
+    destinations: '{"ask":"btw","explain":"main"}'   # 答案去向：动作 → main | btw
+```
+
+`destinations` 是 JSON 字符串而不是映射，因为 schemastery 没有 record 类型
+（见 `lib/index.js#Config`）；不写表示「这里没有决定」，此时以浏览器里保存的
+去向为准。其余三项在命名空间被服务时**以配置为准**（它们有 schema 默认值，配置
+里总是有值），浏览器里的副本只是镜像；卡片、弹窗与配置文件因此不会各说各话。
 
 ## 安装
 
@@ -135,17 +156,28 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
 - dsh web（适配 0.1.2 起的 host 契约）
 - profile 需已挂载 `@deepseek-ai/dsh-cordis-client-runner`（0.1.2 起取代
   了 `@deepseek-ai/dsh-client-runtime`；`web` profile 默认自带）。设置卡片
-  通过按设置命名空间分发的 `settings.plugin.item` keyed 槽注册，插件的
-  小型 host 半端会注册 `dsh-selection-toolbar` 命名空间，设置 → 插件 才会
-  派发这张卡片。宿主接口是**探测后使用**而不是假定：`settings.register`
-  不存在时（例如 0.2.0-rc.2 只提供 configure/describe/update/replace/mutate/
-  write/schema）会记一条告警并退回旧的 list-slot 契约，不再在 inject 回调里
-  抛错。`test/host-apply.test.js` 覆盖这三种宿主形态。
+  依赖两半同时到位：host 半端导出 `Config`，插件条目才有可配置的设置
+  命名空间（表单线 `SettingsForms.describe()` 只收 `Config` 能产出 volatile
+  表单的条目）；client 半端把卡片注册进运行中部署真正派发的槽——插件页对
+  已安装 bundle 派发 `plugins.bundle.config`（key 为包名）与
+  `plugins.row.config`（key 为 `<包名>#<patch 行 id>`，本包即
+  `dsh-selection-toolbar#dsh-selection-toolbar`，与 host 条目 id 同串），
+  旧构建派发按命名空间分发的 `settings.plugin.item`；三个都注册，未声明的
+  那个不会触发（`slots.inject` 是等待而不是判断）。卡片优先用页面递过来的
+  表单，没有就自己从 `ctx.configForms` 取该命名空间的控制器（页面递表单的
+  只有 row/item 页，bundle 页不递）。宿主接口一律**探测后使用**：
+  `settings.register` 不存在但服务能 `describe`（运行中的 0.2.0-rc.2）是那条
+  线的正常契约，不告警；命名空间由导出的 `Config` 提供。
+  `test/host-apply.test.js` 覆盖四种宿主形态，`test/settings-card.test.js`
+  钉住 `Config` 的 volatile/default 字段、三个槽的注册与「未声明槽不注册」、
+  key 与包名/patch 行 id 的耦合、host JSON 往返、畸形值丢弃，以及配置→弹窗的
+  镜像写入。
 - /btw 侧问依赖 host 侧核心服务 `webServer` / `sessionQuery` /
   `agentDefaultModel` / `llm`（均为 dsh host 组合自带，无需额外安装）。
   服务缺失时路由不注册，侧问弹窗内会给出可读错误。
-- 唯一的运行时依赖是 `@deepseek-ai/schemastery`（host 半端用它注册设置
-  命名空间的 schema），**固定精确版本**并随仓库提交 `pnpm-lock.yaml`：范围写法
+- 唯一的运行时依赖是 `@deepseek-ai/schemastery`（host 半端用它声明设置
+  命名空间与条目 `Config` 的 schema），**固定精确版本**并随仓库提交
+  `pnpm-lock.yaml`：范围写法
   会让全新安装解析到未审阅的构建，而 host 半端是在操作者的 dsh 进程里、以该
   进程的完整权限加载的（实测 `^3.18.0` 在不同检出中解析成 3.18.1 与 3.18.4）。
   健康门禁 `node scripts/check.js` 会拒绝 `^` / `~` / `*` 等范围写法与浮动的
@@ -155,9 +187,10 @@ host 半端只依赖 `@deepseek-ai/schemastery`（已在 `package.json` 声明�
 
 - **行为纯 client、附一个极小的 host 半端**：AI 动作通过 client 侧
   `sessions` 服务的 `binding(id).session.prompt(...)` 发送——与 composer
-  自身同一条通路，排队与错误面都是原生的。host 半端只负责注册设置
-  命名空间（见「依赖」），让 rc.8+ 能派发设置卡片；卡片本身的选项值
-  仍存在浏览器 localStorage（client-only 设计）。
+  自身同一条通路，排队与错误面都是原生的。host 半端负责设置命名空间与其
+  条目 `Config`（见「依赖」），让两代设置界面都能派发这张卡片；卡片读的
+  值以浏览器 localStorage 为准（popup 同步读它、改完即时生效），在宿主
+  派发设置表单时同时经表单写回 profile 配置。
 - **/btw 侧问通道**：静态 bundle 没有动态插件那套 package-private host
   RPC（factory 只收 `require`），所以 host 半端通过 `webServer` 注册精确
   路由 `POST /plugins/dsh-selection-toolbar/btw`（exact 路由优先于
