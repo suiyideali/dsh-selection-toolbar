@@ -4,6 +4,55 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- **设置卡片在桌面版（dsh 0.2.0-rc.2）又重新出现了**（#19）：插件已安装、已启用，
+  但任何地方都找不到配置入口，于是「答案去向」无法改成走 `/btw`。原因是两半都不
+  在运行中部署的契约上：client 半端把卡片注册进 `settings.plugin.item`，而
+  0.2.0-rc.2 的「插件」页（`dsh-client-ui-plugin-manager`）根本不声明这个槽——
+  它声明的是 `plugins.bundle.config`（key 为包名）与 `plugins.row.config`（key
+  为 `<包名>#<patch 行 id>`，本包即
+  `dsh-selection-toolbar#dsh-selection-toolbar`，与 host 条目 id 同串，所以页面的
+  `configForm(id)` 正好拿到本命名空间）；`slots.inject` 对未声明的槽是**等待**而不是
+  判断，回调永不执行，注册就此静默失效。现在三个槽都注册（未声明的不会触发），
+  卡片出现在 **插件 → dsh-selection-toolbar** 页的配置区；host 半端也**导出
+  `Config`**：0.2.0-rc.2 那一代设置线只把 `SettingsForms.describe()` 能产出
+  volatile 表单的条目算作「可配置命名空间」，没有这个导出，页面对该命名空间直接
+  不渲染配置区，卡片也拿不到 form。卡片优先用页面递来的表单、没有就自己从
+  `ctx.configForms` 取该命名空间的控制器（只有 row/item 页递表单）。卡片据 form
+  读值、每次改动写回 profile 配置（`delay` / `hiddenActions` / `btwContextMessages`
+  / `destinations`）；配置被服务时 localStorage 是它的**镜像**（改动经表单读回后
+  同步落盘并通知弹窗），所以也可以直接手改 `cordis.patch.yml`（README「设置」节
+  给出格式；`destinations` 是 JSON 字符串，因为 schemastery 没有 record 类型，
+  且没有默认值——未写过时该字段在解析结果里不存在，卡片据此判断「这里没有决定」
+  并沿用浏览器里保存的去向）。
+  顺带修掉两处会一起暴露的问题：卡片此前借用
+  `dsh-client-ui-settings-plugins` 的哈希类名（`YyYd_a_`，而渲染它的插件页用的
+  是另一套哈希名，等于没有样式），现在自带 `.dyn-seltb-*` 样式，宿主类名仅作叠加；
+  form 里的延时/开关/去向改动对弹窗即时生效（localStorage 仍是 popup 的同步读取
+  源）。新增 `test/settings-card.test.js`（23 项，含 `Config` 全字段 volatile + 默认值、
+  三个槽的注册与「未声明槽不注册」、注册 key 与包名/patch 行 id 的耦合、host JSON
+  往返与恶意/畸形值丢弃、配置→localStorage 的镜像写入与「无变化不写」、
+  写回期间「在途字段不被旧快照回退」的竞态），
+  `test/host-apply.test.js` 与 `test/btw-admission.test.js` 的 `z` 桩补上链式方法。
+  另外用真实 `@deepseek-ai/schemastery` 复核过发现路径：`Config.toJSON()` 四个字段
+  都带 `volatile: true`（`volatileForm()` 因此不会丢掉该条目），未写过的
+  `destinations` 在 `plainConfig()` 结果里不存在，写过时是字符串。
+- **卡片、弹窗与配置文件三者不再各说各话（渲染级联调发现）**：把卡片真跑起来后
+  暴露了两处只有端到端才看得见的问题——(1) 第一次编辑会用 localStorage 当基底，
+  把刚从配置读来的值覆盖成 schema 默认值（卡片显示 100 ms、一旦改别的选项就把
+  100 写回成 0）；(2) `form.mutate` 要等 Host 提交才 resolve，但设置镜像可能先
+  发布**上一版**，于是那条通知把用户刚选的「走侧问」改回「进主线」（卡片与
+  localStorage 一起回退）。现在读写只有一个出口：host 折叠出的状态同时是卡片
+  状态与 localStorage 镜像，且**在途字段**（已经开始写、还没 settle 的字段）在
+  折叠时保留用户值，settle 后重新跟随 Host（拒绝写入也由此浮现）。镜像写入因此
+  不会因为「折叠没变化」而漏掉，也不会在一次编辑里被旧快照回退。新增 3 项断言
+  覆盖镜像与竞态。
+- **`settings.register` 缺席不再被当成降级而告警**：运行中的 0.2.0-rc.2 那条线
+  本来就只有 describe 没有 register，命名空间由导出的 `Config` 提供，每次启动都
+  打一条「设置注册不可用」的告警是误报。现在只有服务连 `describe` 都没有时才
+  记一条（`test/host-apply.test.js` 改成覆盖四种形态）。
+
 ### Changed
 
 - **不再走 npm 发布路径**：安装方式一直是 `dsh plugin add github:suiyideali/dsh-selection-toolbar`
