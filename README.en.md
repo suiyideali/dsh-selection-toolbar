@@ -19,10 +19,10 @@ context. Any action can also be routed to the **/btw side channel** in settings.
 | --- | --- |
 | 复制 Copy | Copy the selected text to the clipboard. |
 | 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. For multi-paragraph text only content lines carry `> ` — blank lines stay bare (consecutive blanks collapse to one) instead of forming a wall of lone `>` lines. |
-| 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the selection as the request, with one lead-in line and one "material only" line; the selection itself is injected as a quote block. |
-| 解释 Explain | Send `请解释下面这段内容：` + selection. |
-| 翻译 Translate | Send `请翻译下面这段内容：` + selection — no target language is fixed, so the model picks the direction from the source. |
-| 总结 Summarize | Send `请用简洁的语言总结下面这段内容：` + selection. |
+| 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the selection as the request, with one lead-in line and one "material only" line; the selection itself is injected as a quote block. Answers in the popup by default; 「转到主线」 sends it to the thread. |
+| 解释 Explain | Ask `请解释下面这段内容` + selection (the popup shows that question while it thinks). |
+| 翻译 Translate | Ask `请翻译下面这段内容` + selection — no target language is fixed, so the model picks the direction from the source. |
+| 总结 Summarize | Ask `请用简洁的语言总结下面这段内容` + selection. |
 | /btw | Side question ("by the way"): the button row morphs into a side-question input; the answer is generated host-side from the **newest slice of the session log** in one direct model call and renders inside the popup — **never enters the conversation, never written to any session history, no tools** (Claude Code `/btw` semantics). Works while the main task is running: the route bypasses the session queue and one shot is it. The console opens as a **centered modal** that page scrolling never moves (compact height while composing, locked at 440×480 while reading or browsing). Copy the answer, ask another, clear the thread; the composing state lists up to 5 history entries, while the answer view stacks nothing below it — press ↑ to browse the full thread read-only (↑/↓ step, Backspace / Esc returns to the latest). Each answer shows the context stats actually injected (entries + chars) and warns when the injection came back empty. |
 
 The popup hides on Escape, scroll, or clicking elsewhere; the 询问 input
@@ -121,8 +121,10 @@ plugin *inventory* is a separate 设置 → 内置插件 page), with:
 - 功能开关 — toggle each toolbar entry individually (复制 · 引用 · 询问 ·
   解释 · 翻译 · 总结 · /btw); disabled entries disappear from the popup
   immediately, and 全部开启 re-enables everything at once
-- 答案去向 — per-action answer destination: 进主线 (original behavior, sent
-  into the conversation) or 走侧问 (/btw side channel, answer only in the popup)
+- 答案去向 — per-action answer destination: 就地弹窗 (default: the answer only
+  shows in the selection popup and never enters the conversation) or 进对话 (sent
+  into the thread, with the full toolset). The popup's 「转到主线」 pushes the
+  current answer into the thread and switches that action to 进对话
 - 侧问上下文条数 — how many of the newest session messages a side question
   carries as context (5–50, default 20)
 - 恢复默认 — reset all options
@@ -142,13 +144,14 @@ and the edit is in force:
     delay: 100                 # popup delay in ms (0–500)
     hiddenActions: [copy]      # copy/quote/ask/explain/translate/summarize/btw
     btwContextMessages: 20     # side-question context messages (5–50)
-    destinations: '{"ask":"btw","explain":"main"}'   # action -> main | btw
+    # action -> main (thread) | btw (popup, the default)
+    destinations: '{"ask":"main","explain":"btw","translate":"btw","summarize":"btw"}'
 ```
 
 `destinations` is a JSON string rather than a map because schemastery has no
 record type (see `lib/index.js#Config`); leaving it unset means "no decision
-here", and the browser-side value stays in force. The other three follow the
-config whenever the namespace is served (they have schema defaults, so the
+here" (the default sends all four to the popup), and the browser-side value stays
+in force. The other three follow the config whenever the namespace is served (they have schema defaults, so the
 config always carries a value); the browser copy is only a mirror, which is what
 keeps the card, the popup and the file from disagreeing.
 
