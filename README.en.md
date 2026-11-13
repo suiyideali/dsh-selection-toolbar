@@ -21,7 +21,7 @@ switchable per action in settings.
 | Action | Behavior |
 | --- | --- |
 | 复制 Copy | Copy the selected text to the clipboard. |
-| 引用 Quote | Insert the selection as a markdown blockquote (`> …`) at the composer caret. For multi-paragraph text only content lines carry `> ` — blank lines stay bare (consecutive blanks collapse to one) instead of forming a wall of lone `>` lines. |
+| 引用 Quote | Insert the selection as a quote. On **dsh 0.2.2+** it goes through the platform's own quote action, so the composer holds a removable quote chip that serializes to a `> ` blockquote on send; on older hosts it falls back to writing the blockquote markdown directly (multi-paragraph quotes keep bare blank lines). Tables and code blocks are rebuilt from the selected DOM, so their structure survives. |
 | 询问 Ask | Opens an inline input; Enter sends `你的问题 + selection`. Leaving the input empty sends the selection as the request, with one lead-in line and one "material only" line; the selection itself is injected as a quote block. Answers in the popup by default; 「转到主线」 sends it to the thread. |
 | 解释 Explain | Ask `请解释下面这段内容` + selection (the popup shows that question while it thinks). Answers in the popup by default; 「转到主线」 sends it to the thread. |
 | 翻译 Translate | Ask `请翻译下面这段内容` + selection — no target language is fixed, so the model picks the direction from the source. Same default and exit as Explain. |
@@ -43,6 +43,11 @@ input Esc closes and ↑ (on an empty input) opens history browsing, where
 ↑/↓ step through entries and Backspace or Esc returns to the latest. Whenever
 it closes, the answer has already been saved to the session's side-question
 thread (localStorage, manual clear).
+
+**Quote and dsh 0.2.2**: the platform added its own 「引用文本」 action and composer
+quote chip in 0.2.2. This plugin's 引用 prefers that same action, so both produce an
+identical removable quote chip; the markdown-into-draft path remains only as the
+fallback for older hosts.
 
 ## Where an answer goes: three paths
 

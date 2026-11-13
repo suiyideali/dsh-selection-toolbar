@@ -4,6 +4,19 @@ All notable changes to dsh-selection-toolbar are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- **「引用」改用 dsh 0.2.2 的官方引用动作**：dsh 0.2.2 起，输入框有了原生引用
+  （`inputActions.insertQuote`）——插入的是一块可删除的引用标签，发送时由平台编码成
+  `> ` 引用块。插件此前仍走旧路径（把 `> ` markdown 文本直接 `setDraft` 进输入框），
+  于是同一段内容在插件里是一堆 `> ` 原始文本、在官方入口里是引用标签，两者不一致。
+  现在**优先调用官方动作**：输入框里得到与官方「引用文本」相同的引用标签，发送后的
+  消息形态不变（仍是 `> ` 引用块，模型可见内容一致）。旧版 dsh（无该动作）或编辑器
+  拒绝插入（忙碌/版本过期）时，自动回退到原来的 markdown 写入，行为不倒退。
+  结构化选区（表格 / 代码块）仍按选中 DOM 还原后交给官方动作，平台会逐行加 `> `
+  保住排版。新增 3 项断言（`nativeQuoteText` 只传原始内容不加前缀、
+  `canInsertNativeQuote` 的能力判断、`runQuote` 先原生后回退的接线）。
+
 ## [1.3.0] - 2026-10-07
 
 ### Changed

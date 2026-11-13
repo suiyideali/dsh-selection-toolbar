@@ -33,11 +33,17 @@ function extract(name) {
   throw new Error(`unbalanced braces in ${name}`)
 }
 
-const QUOTE_FNS = ['quoteCell', 'quoteTable', 'quoteCode', 'quoteMarkdownFromFragment', 'quoteBlockOf']
+const QUOTE_FNS = [
+  'quoteCell', 'quoteTable', 'quoteCode', 'quoteMarkdownFromFragment', 'quoteBlockOf',
+  'canInsertNativeQuote', 'nativeQuoteText'
+]
 
-const { quoteTable, quoteCode, quoteMarkdownFromFragment, quoteBlockOf } = new Function(
+const {
+  quoteTable, quoteCode, quoteMarkdownFromFragment, quoteBlockOf,
+  canInsertNativeQuote, nativeQuoteText
+} = new Function(
   QUOTE_FNS.map(extract).join('\n\n') +
-    '\nreturn { quoteTable, quoteCode, quoteMarkdownFromFragment, quoteBlockOf }'
+    '\nreturn { quoteTable, quoteCode, quoteMarkdownFromFragment, quoteBlockOf, canInsertNativeQuote, nativeQuoteText }'
 )()
 
 // ---- minimal DOM mock (only the members the serializers touch) --------------
@@ -184,4 +190,55 @@ test('prose quoting is unchanged: blank lines stay bare', () => {
 
 test('returns an empty string for empty input', () => {
   assert.equal(quoteBlockOf('   \n  '), '')
+})
+
+// ---- native quote path (dsh 0.2.2+) ----------------------------------------
+//
+// dsh 0.2.2 added `inputActions.insertQuote(raw)`: the platform encodes the
+// `> ` blockquote itself and keeps an atomic, removable quote chip in the
+// composer. The plugin used to always write `> ` markdown through `setDraft`,
+// so the composer showed raw blockquote text. These pin the preferred path and
+// the fallback decision.
+
+test('nativeQuoteText passes raw content and never adds blockquote markers', () => {
+  // Prose: the selection text, untouched apart from line endings / trailing ws.
+  assert.equal(nativeQuoteText('', '第一行\n第二行\n\n'), '第一行\n第二行')
+  assert.equal(nativeQuoteText(undefined, 'a\r\nb'), 'a\nb')
+  // Structured: the DOM-serialized markdown (table / fence) is what the quote
+  // node must carry — the platform prefixes the lines when serializing.
+  assert.equal(nativeQuoteText('| a | b |\n| --- | --- |', 'a\tb'), '| a | b |\n| --- | --- |')
+  // A blank quote string (prose selections) must fall back to the text.
+  assert.equal(nativeQuoteText('   ', 'text'), 'text')
+  assert.equal(nativeQuoteText('', ''), '')
+})
+
+test('canInsertNativeQuote requires the action function', () => {
+  assert.equal(canInsertNativeQuote({ insertQuote: () => true }), true)
+  assert.equal(canInsertNativeQuote({ setDraft: () => {} }), false)
+  assert.equal(canInsertNativeQuote({ insertQuote: 'nope' }), false)
+  assert.equal(canInsertNativeQuote(undefined), false)
+  assert.equal(canInsertNativeQuote(null), false)
+})
+
+test('runQuote prefers the native quote action and keeps the markdown fallback', () => {
+  // Wiring, pinned at the source: the native branch must run BEFORE the draft
+  // rewrite, succeed with the raw text, and fall through to the old path when the
+  // host has no `insertQuote` or the composer refuses the edit.
+  const start = bundle.indexOf('const runQuote = () => {')
+  assert.ok(start >= 0, 'runQuote missing from the bundle')
+  // Slice the whole handler (the native branch itself calls clearSelection).
+  const end = bundle.indexOf('const submitCustom = () => {', start)
+  assert.ok(end > start, 'runQuote must be followed by submitCustom in the bundle')
+  const body = bundle.slice(start, end)
+  const native = body.indexOf('canInsertNativeQuote(quoteBridge.actions)')
+  const fallback = body.indexOf("setDraft(next)")
+  assert.ok(native >= 0, 'runQuote must try the native quote action')
+  assert.ok(fallback > native, 'the markdown fallback must come after the native attempt')
+  assert.match(body.slice(native), /insertQuote\(raw\)/)
+  assert.match(body.slice(native), /clearSelection\(\)/)
+  assert.match(body.slice(native), /return/)
+
+  // The native branch hands over raw content, not our `> ` block.
+  assert.ok(!/insertQuote\(block\)/.test(body), 'the native action encodes the markers itself')
+  assert.ok(!/insertQuote\(quoteBlockOf/.test(body))
 })
